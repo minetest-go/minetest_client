@@ -9,7 +9,7 @@ describe("ToServerPacket test", function()
 			channel = 0,
 			type = "reliable",
 			subtype = "original",
-			sequence_nr = string.char(0xff, 0xdc),
+			sequence_nr = 65500,
 			payload = string.char(0x00, 0x00)
 		}
 

@@ -1,31 +1,20 @@
 
 local Constants = require("packet/Constants")
+local Helpers = require("packet/Helpers")
 local PacketType = require("packet/PacketType")
 
 local commands = {
 	["HELLO"] = "\x00\x01"
 }
 
--- helpers
-local function int_to_bytes(i)
-	local x = i + 32768
-	local h = math.floor(x / 256) % 256;
-	local l = math.floor(x % 256);
-	return string.char(h, l);
-end
-
-local function bytes_to_int(h, l)
-	return (h * 256) + l - 32768
-end
-
 local function create(def)
-	assert(commands[def.command], "command not available: " .. def.command)
+	-- assert(commands[def.command], "command not available: " .. def.command)
 
 	local packet = 	Constants.protocol_id ..
-		int_to_bytes(def.peer_id) .. -- peer_id
+		Helpers.int_to_bytes(def.peer_id) .. -- peer_id
 		string.char(def.channel) .. -- channel
 		PacketType[def.type] .. -- type
-		int_to_bytes(def.sequence_nr) .. -- seq nr
+		Helpers.int_to_bytes(def.sequence_nr) .. -- seq nr
 		PacketType[def.subtype] .. -- subtype
 		def.payload
 
@@ -41,7 +30,7 @@ local function parse(buf)
 
 	local def = {}
 
-	def.peer_id = bytes_to_int( string.byte(buf, 5), string.byte(buf, 6) )
+	def.peer_id = Helpers.bytes_to_int( string.byte(buf, 5), string.byte(buf, 6) )
 	def.channel = string.byte(buf, 7)
 
 	for k, v in pairs(PacketType) do
@@ -51,7 +40,7 @@ local function parse(buf)
 		end
 	end
 
-	def.sequence_nr = bytes_to_int( string.byte(buf, 9), string.byte(buf, 10) )
+	def.sequence_nr = Helpers.bytes_to_int( string.byte(buf, 9), string.byte(buf, 10) )
 
 	for k, v in pairs(PacketType) do
 		if string.byte(v) == string.byte(buf, 11) then
@@ -59,6 +48,8 @@ local function parse(buf)
 			break
 		end
 	end
+
+	def.payload = ""
 
 	return def
 end

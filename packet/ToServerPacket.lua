@@ -6,6 +6,7 @@ local commands = {
 	["HELLO"] = "\x00\x01"
 }
 
+-- helpers
 local function int_to_bytes(i)
 	local x = i + 32768
 	local h = math.floor(x / 256) % 256;
@@ -41,6 +42,23 @@ local function parse(buf)
 	local def = {}
 
 	def.peer_id = bytes_to_int( string.byte(buf, 5), string.byte(buf, 6) )
+	def.channel = string.byte(buf, 7)
+
+	for k, v in pairs(PacketType) do
+		if string.byte(v) == string.byte(buf, 8) then
+			def.type = k
+			break
+		end
+	end
+
+	def.sequence_nr = bytes_to_int( string.byte(buf, 9), string.byte(buf, 10) )
+
+	for k, v in pairs(PacketType) do
+		if string.byte(v) == string.byte(buf, 11) then
+			def.subtype = k
+			break
+		end
+	end
 
 	return def
 end

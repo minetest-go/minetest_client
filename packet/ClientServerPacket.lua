@@ -2,11 +2,20 @@
 local Constants = require("packet/Constants")
 local Helpers = require("packet/Helpers")
 local PacketTypes = require("packet/PacketTypes")
+local ClientServerCommands = require("packet/ClientServerCommands")
 
 -- lookup tables
 local packet_types_by_id = {}
 for k, id in pairs(PacketTypes) do
 	packet_types_by_id[id] = k
+end
+
+local commands_by_id = {}
+local commands_by_key = {}
+
+for _, cmd in ipairs(ClientServerCommands) do
+	commands_by_id[cmd.id] = cmd
+	commands_by_key[cmd.key] = cmd
 end
 
 local function create(def)
@@ -25,7 +34,11 @@ local function create(def)
 
 	elseif def.type == "original" then
 		-- command + payload
-		error("not implemented")
+		local cmd = commands_by_key[def.command]
+
+		packet = packet ..
+			Helpers.int_to_bytes(cmd.id) ..
+			cmd.create(def.payload)
 
 	elseif def.type == "control" then
 		-- acks

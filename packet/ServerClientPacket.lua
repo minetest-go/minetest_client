@@ -27,7 +27,9 @@ local function parse(buf)
 
 	-- 4F457403 0001 00 03 FFDC 0001 00F4
 	-- 4F457403 0001 00 00 00 FFDC
-	-- 4F457403 0001 00 03 FFDD 0002
+	-- 4F457403 0001 00 03 FFDD 00 02
+	-- 4F457403 0001 00 03 FFDD 01 00 02 1C00000027000000020004626C6168
+	-- 4F457403 0001 00 03 FFDD 01 00 02 1C00000027000000020004626C6168
 
 	local def = {}
 
@@ -40,6 +42,10 @@ local function parse(buf)
 		def.sequence_nr = Helpers.bytes_to_int( string.byte(buf, 9), string.byte(buf, 10) )
 		def.command_id = Helpers.bytes_to_int( string.byte(buf, 11), string.byte(buf, 12) )
 		local cmd = commands_by_id[def.command_id]
+		if not cmd then
+			error("unknown command received: " .. def.command_id)
+		end
+
 		def.command = cmd.key
 		def.payload = cmd.parse(buf:sub(13))
 

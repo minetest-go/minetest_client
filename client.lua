@@ -65,6 +65,21 @@ while true do
 
       udp:send(ack_packet)
 
+      local init_packet = ClientServerPacket.create({
+        peer_id = peer_id,
+        channel = 1,
+        type = "original",
+        command = "INIT",
+        payload = {
+          client_max = 28,
+          supp_compr_modes = 0,
+          min_net_proto_version = 37,
+          max_net_proto_version = 39,
+          player_name = "blah"
+        }
+      })
+
+      udp:send(init_packet)
       -- TODO: send "INIT" after a delay
     end
 

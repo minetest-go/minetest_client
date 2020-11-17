@@ -17,7 +17,9 @@ return {
 		id = 80,
 		key = "FIRST_SRP",
 		create = function(def)
-			return ""
+			return Helpers.create_string(def.salt) ..
+				Helpers.create_string(def.verification_key) ..
+				string.char(def.is_empty)
 		end
 	}
 }

@@ -24,6 +24,11 @@ return {
 		end
 	},
 	{
+		id = 10,
+		key = "ACCESS_DENIED",
+		parse = function() end
+	},
+	{
 		id = 41,
 		key = "TIME_OF_DAY",
 		parse = function(payload)

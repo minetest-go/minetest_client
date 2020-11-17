@@ -83,7 +83,9 @@ while true do
         type = "original",
         command = "FIRST_SRP",
         payload = {
-          -- TODO
+          salt = "",
+          verification_key = "",
+          is_empty = 0
         }
       })
 

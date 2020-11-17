@@ -14,8 +14,13 @@ local function extract_string(payload, offset)
 	return string.sub(payload, offset+3, offset + size + 3), size+2
 end
 
+local function create_string(str)
+	return int_to_bytes(#str) .. str
+end
+
 return {
 	int_to_bytes = int_to_bytes,
 	bytes_to_int = bytes_to_int,
-	extract_string = extract_string
+	extract_string = extract_string,
+	create_string = create_string
 }

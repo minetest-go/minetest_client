@@ -25,7 +25,7 @@ end
 
 
 local function parse(buf)
-	assert(#buf > 10, "packet too small")
+	assert(#buf >= 9, "packet too small")
 
 	for i=1,4 do
 		assert(string.byte(Constants.protocol_id, i) == string.byte(buf, i))
@@ -48,6 +48,8 @@ local function parse(buf)
 	-- 4F457403 0001 00 03 FFDC 00 01 0187
 	-- 4F457403 0001 00 03 FFDC 00 01 0198
 	-- 4F457403 0001 00 03 FFDD 00 02
+
+	-- 4F457403 0001 00 00 03
 
 	local def = {}
 
@@ -95,10 +97,15 @@ local function parse(buf)
 		error("not implemented")
 
 	elseif def.type == "control" then
-		if string.byte(buf, 9) == 0 then
+		def.controltype = control_types_by_id[string.byte(buf, 9)]
+
+		if def.controltype == "ACK" then
 			-- ack
-			def.ack = true
 			def.sequence_nr = Helpers.bytes_to_int( string.byte(buf, 10), string.byte(buf, 11) )
+
+		elseif def.controltype == "DISCO" then
+			error("disconnect")
+
 		else
 			error("not implemented")
 		end

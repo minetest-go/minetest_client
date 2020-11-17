@@ -4,6 +4,9 @@ local socket = require("socket")
 local ClientServerPacket = require("packet/ClientServerPacket")
 local ServerClientPacket = require("packet/ServerClientPacket")
 
+-- command line args
+local server, port = ...
+
 local function tohex(str)
     return (str:gsub('.', function (c)
         return string.format('%02X', string.byte(c))
@@ -24,9 +27,9 @@ local function dump(o)
 end
 
 
-print("Sending data")
+print("Connecting to " .. server .. ":" .. port)
 local udp = socket.udp()
-udp:setpeername("remote.rudin.io", 30000)
+udp:setpeername(server, tonumber(port))
 udp:settimeout(100)
 
 local packet = ClientServerPacket.create({

@@ -32,7 +32,12 @@ local udp = socket.udp()
 udp:setpeername(server, tonumber(port))
 udp:settimeout(100)
 
-local packet = ClientServerPacket.create({
+local function tx(def)
+  print("TX: " .. dump(def))
+  udp:send(ClientServerPacket.create(def))
+end
+
+tx({
   peer_id = 0,
   channel = 0,
   type = "reliable",
@@ -41,24 +46,32 @@ local packet = ClientServerPacket.create({
   payload = string.char(0x00, 0x00)
 })
 
-udp:send(packet)
-
-local peer_id
+local peer_id = 1
 
 while true do
   local data = udp:receive()
   if data then
-    print("Received: ", tohex(data))
-    packet = ServerClientPacket.parse(data)
-    print(dump(packet))
+    print("Received: " .. tohex(data) .. " len: " .. #data)
+    local packet = ServerClientPacket.parse(data)
+    print("RX: " .. dump(packet))
 
     if packet.command == "SET_PEER_ID" then
       peer_id = packet.payload.peer_id
       print("Setting peer id to: " .. peer_id)
     end
 
+    if packet.command == "HELLO" then
+      tx({
+        peer_id = peer_id,
+        channel = 0,
+        type = "control",
+        sequence_nr = packet.sequence_nr,
+        ack = true
+      })
+    end
+
     if packet.ack then
-      local ack_packet = ClientServerPacket.create({
+      tx({
         peer_id = peer_id,
         channel = 0,
         type = "control",
@@ -66,9 +79,7 @@ while true do
         ack = true
       })
 
-      udp:send(ack_packet)
-
-      local init_packet = ClientServerPacket.create({
+      tx({
         peer_id = peer_id,
         channel = 1,
         type = "original",
@@ -82,7 +93,6 @@ while true do
         }
       })
 
-      udp:send(init_packet)
       -- TODO: send "INIT" after a delay
     end
 

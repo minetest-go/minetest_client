@@ -25,12 +25,20 @@ local function parse(buf)
 		assert(string.byte(Constants.protocol_id, i) == string.byte(buf, i))
 	end
 
-	-- 4F457403 0001 00 03 FFDC 0001 00F4
+	-- 4F457403 0001 00 03 FFDC 00 01 0141
+	-- 4F457403 0001 00 03 FFDC 00 01 00F4
 	-- 4F457403 0001 00 00 00 FFDC
+
+	--                  __ < reliable
+	--                          __ < subtype
 	-- 4F457403 0001 00 03 FFDD 00 02
 	-- 4F457403 0001 00 03 FFDD 01 00 02 1C00000027000000020004626C6168
 	-- 4F457403 0001 00 03 FFDD 01 00 02 1C00000027000000020004626C6168
+	-- 4F457403 0001 00 03 FFDD 01 00 02 1C00000027000000020004626C6168
 
+	-- 4F457403 0001 00 03 FFDE 01 00 29 3F5C42900000
+	-- 4F457403 0001 00 03 FFDF 00 02
+	-- 4F457403 0001 00 03 FFDC 00 01 015B
 	local def = {}
 
 	def.peer_id = Helpers.bytes_to_int( string.byte(buf, 5), string.byte(buf, 6) )
@@ -40,14 +48,23 @@ local function parse(buf)
 
 	if def.type == "reliable" then
 		def.sequence_nr = Helpers.bytes_to_int( string.byte(buf, 9), string.byte(buf, 10) )
-		def.command_id = Helpers.bytes_to_int( string.byte(buf, 11), string.byte(buf, 12) )
-		local cmd = commands_by_id[def.command_id]
-		if not cmd then
-			error("unknown command received: " .. def.command_id)
-		end
 
-		def.command = cmd.key
-		def.payload = cmd.parse(buf:sub(13))
+		if string.byte(buf, 11) == 0 then
+			-- "short" packet
+			def.command_id = Helpers.bytes_to_int( string.byte(buf, 11), string.byte(buf, 12) )
+		else
+			-- normal packet with subtype
+			def.subtype = packet_types_by_id[string.byte(buf, 11)]
+			def.command_id = Helpers.bytes_to_int( string.byte(buf, 12), string.byte(buf, 13) )
+
+			local cmd = commands_by_id[def.command_id]
+			if not cmd then
+				error("unknown command received: " .. def.command_id)
+			end
+
+			def.command = cmd.key
+			def.payload = cmd.parse(buf:sub(14))
+		end
 
 	elseif def.type == "original" then
 		error("not implemented")

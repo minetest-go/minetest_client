@@ -1,5 +1,5 @@
 
-local ToServerPacket = require("packet/ToServerPacket")
+local ClientServerPacket = require("packet/ClientServerPacket")
 
 describe("ToServerPacket test", function()
 	it("should parse the generated packet", function()
@@ -14,8 +14,8 @@ describe("ToServerPacket test", function()
 		}
 
 		-- create -> parse
-		local packet = ToServerPacket.create(txdef)
-		local def = ToServerPacket.parse(packet)
+		local packet = ClientServerPacket.create(txdef)
+		local def = ClientServerPacket.parse(packet)
 
 		assert.are.same(txdef, def)
 	end)

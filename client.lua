@@ -1,9 +1,8 @@
 
 local socket = require("socket")
 
-local ToServerPacket = require("packet/ToServerPacket")
-local Constants = require("packet/Constants")
-local PacketType = require("packet/PacketType")
+local ClientServerPacket = require("packet/ClientServerPacket")
+local ServerClientPacket = require("packet/ServerClientPacket")
 
 local function tohex(str)
     return (str:gsub('.', function (c)
@@ -11,22 +10,61 @@ local function tohex(str)
     end))
 end
 
+local function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
+
 print("Sending data")
 local udp = socket.udp()
 udp:setpeername("remote.rudin.io", 30000)
 udp:settimeout(100)
 
-udp:send(
-	Constants.protocol_id ..
-	string.char(0x00, 0x00) .. -- peer_id
-	string.char(0x00) .. -- channel
-	PacketType.reliable .. -- type
-	string.char(0xff, 0xdc) .. -- seq nr
-	PacketType.original .. -- subtype
-	string.char(0x00, 0x00)
-)
+local packet = ClientServerPacket.create({
+  peer_id = 0,
+  channel = 0,
+  type = "reliable",
+  sequence_nr = 65500,
+  subtype = "original",
+  payload = string.char(0x00, 0x00)
+})
 
-local data = udp:receive()
-if data then
+udp:send(packet)
+
+local peer_id
+
+while true do
+  local data = udp:receive()
+  if data then
     print("Received: ", tohex(data))
+    packet = ServerClientPacket.parse(data)
+    print(dump(packet))
+
+    if packet.command == "SET_PEER_ID" then
+      peer_id = packet.payload.peer_id
+      print("Setting peer id to: " .. peer_id)
+    end
+
+    if packet.ack then
+      local ack_packet = ClientServerPacket.create({
+        peer_id = peer_id,
+        channel = 0,
+        type = "control",
+        sequence_nr = packet.sequence_nr,
+        ack = true
+      })
+
+      udp:send(ack_packet)
+    end
+
+  end
 end

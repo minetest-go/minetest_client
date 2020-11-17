@@ -1,11 +1,13 @@
 
 local Constants = require("packet/Constants")
 local Helpers = require("packet/Helpers")
-local PacketType = require("packet/PacketType")
+local PacketTypes = require("packet/PacketTypes")
 
-local commands = {
-	["HELLO"] = "\x00\x01"
-}
+-- lookup tables
+local packet_types_by_id = {}
+for k, id in pairs(PacketTypes) do
+	packet_types_by_id[id] = k
+end
 
 local function create(def)
 	-- assert(commands[def.command], "command not available: " .. def.command)
@@ -13,10 +15,24 @@ local function create(def)
 	local packet = 	Constants.protocol_id ..
 		Helpers.int_to_bytes(def.peer_id) .. -- peer_id
 		string.char(def.channel) .. -- channel
-		PacketType[def.type] .. -- type
-		Helpers.int_to_bytes(def.sequence_nr) .. -- seq nr
-		PacketType[def.subtype] .. -- subtype
-		def.payload
+		string.char(PacketTypes[def.type]) -- type
+
+
+	if def.type == "reliable" then
+		packet = packet .. Helpers.int_to_bytes(def.sequence_nr) .. -- seq nr
+			string.char(PacketTypes[def.subtype]) .. -- subtype
+			def.payload
+
+	elseif def.type == "original" then
+		-- command + payload
+		error("not implemented")
+
+	elseif def.type == "control" then
+		-- acks
+		packet = packet .. string.char(0x00) .. -- ack
+			Helpers.int_to_bytes(def.sequence_nr) -- seq nr
+
+	end
 
 	return packet
 end
@@ -32,23 +48,9 @@ local function parse(buf)
 
 	def.peer_id = Helpers.bytes_to_int( string.byte(buf, 5), string.byte(buf, 6) )
 	def.channel = string.byte(buf, 7)
-
-	for k, v in pairs(PacketType) do
-		if string.byte(v) == string.byte(buf, 8) then
-			def.type = k
-			break
-		end
-	end
-
+	def.type = packet_types_by_id[string.byte(buf, 8)]
 	def.sequence_nr = Helpers.bytes_to_int( string.byte(buf, 9), string.byte(buf, 10) )
-
-	for k, v in pairs(PacketType) do
-		if string.byte(v) == string.byte(buf, 11) then
-			def.subtype = k
-			break
-		end
-	end
-
+	def.subtype = packet_types_by_id[string.byte(buf, 11)]
 	def.payload = ""
 
 	return def

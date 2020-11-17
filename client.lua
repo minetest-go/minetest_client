@@ -64,6 +64,8 @@ while true do
       })
 
       udp:send(ack_packet)
+
+      -- TODO: send "INIT" after a delay
     end
 
   end

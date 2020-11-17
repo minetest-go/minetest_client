@@ -31,5 +31,28 @@ return {
 				time_of_day = Helpers.bytes_to_int( string.byte(payload, 1), string.byte(payload, 2) ) % 24000
 			}
 		end
+	},
+	{
+		id = 47,
+		key = "CHAT_MESSAGE",
+		parse = function(payload)
+			return {
+				message = Helpers.extract_string(payload, 0)
+			}
+		end
+	},
+	{
+		id = 86,
+		key = "UPDATE_PLAYER_LIST"
+		-- u8:type, u16:num_players
+	},
+	{
+		id = 67,
+		key = "DETACHED_INVENTORY",
+		parse = function(payload)
+			return {
+				name = Helpers.extract_string(payload, 0)
+			}
+		end
 	}
 }

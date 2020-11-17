@@ -1,6 +1,7 @@
 local Constants = require("packet/Constants")
 local Helpers = require("packet/Helpers")
 local PacketTypes = require("packet/PacketTypes")
+local ControlTypes = require("packet/ControlTypes")
 local ServerClientCommands = require("packet/ServerClientCommands")
 
 -- lookup tables
@@ -10,6 +11,11 @@ local commands_by_key = {}
 for _, cmd in ipairs(ServerClientCommands) do
 	commands_by_id[cmd.id] = cmd
 	commands_by_key[cmd.key] = cmd
+end
+
+local control_types_by_id = {}
+for k, id in pairs(ControlTypes) do
+	control_types_by_id[id] = k
 end
 
 local packet_types_by_id = {}
@@ -38,7 +44,11 @@ local function parse(buf)
 
 	-- 4F457403 0001 00 03 FFDE 01 00 29 3F5C42900000
 	-- 4F457403 0001 00 03 FFDF 00 02
-	-- 4F457403 0001 00 03 FFDC 00 01 015B
+	-- 4F457403 0001 00 03 FFDC 00 01 015B -- set peer id
+	-- 4F457403 0001 00 03 FFDC 00 01 0187
+	-- 4F457403 0001 00 03 FFDC 00 01 0198
+	-- 4F457403 0001 00 03 FFDD 00 02
+
 	local def = {}
 
 	def.peer_id = Helpers.bytes_to_int( string.byte(buf, 5), string.byte(buf, 6) )
@@ -48,13 +58,26 @@ local function parse(buf)
 
 	if def.type == "reliable" then
 		def.sequence_nr = Helpers.bytes_to_int( string.byte(buf, 9), string.byte(buf, 10) )
+		def.subtype = packet_types_by_id[string.byte(buf, 11)]
 
-		if string.byte(buf, 11) == 0 then
-			-- "short" packet
-			def.command_id = Helpers.bytes_to_int( string.byte(buf, 11), string.byte(buf, 12) )
-		else
+		if def.subtype == "control" then
+			-- control packet
+			def.controltype = control_types_by_id[string.byte(buf, 12)]
+
+			if def.controltype == "SET_PEER_ID" then
+				-- set peer id
+				local cmd = commands_by_key["SET_PEER_ID"]
+				if not cmd then
+					error("unknown command received" .. def.command_id)
+				end
+
+				def.command = cmd.key
+				def.payload = cmd.parse(buf:sub(13))
+
+			end
+
+		elseif def.subtype == "original" then
 			-- normal packet with subtype
-			def.subtype = packet_types_by_id[string.byte(buf, 11)]
 			def.command_id = Helpers.bytes_to_int( string.byte(buf, 12), string.byte(buf, 13) )
 
 			local cmd = commands_by_id[def.command_id]
@@ -64,6 +87,8 @@ local function parse(buf)
 
 			def.command = cmd.key
 			def.payload = cmd.parse(buf:sub(14))
+		else
+			error("unknown subtype")
 		end
 
 	elseif def.type == "original" then

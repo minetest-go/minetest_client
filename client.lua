@@ -3,6 +3,7 @@ local socket = require("socket")
 
 local ClientServerPacket = require("packet/ClientServerPacket")
 local ServerClientPacket = require("packet/ServerClientPacket")
+local DumpPacket = require("packet/DumpPacket")
 
 -- command line args
 local server, port = ...
@@ -13,28 +14,16 @@ local function tohex(str)
     end))
 end
 
-local function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
-end
-
-
 print("Connecting to " .. server .. ":" .. port)
 local udp = socket.udp()
 udp:setpeername(server, tonumber(port))
 udp:settimeout(100)
 
 local function tx(def)
-  print("TX: " .. dump(def))
-  udp:send(ClientServerPacket.create(def))
+  print("TX: " .. DumpPacket(def))
+  local data = ClientServerPacket.create(def)
+  print(">> Sending:  " .. tohex(data) .. " len: " .. #data)
+  udp:send(data)
 end
 
 tx({
@@ -51,33 +40,24 @@ local peer_id = 1
 while true do
   local data = udp:receive()
   if data then
-    print("Received: " .. tohex(data) .. " len: " .. #data)
+    print("<< Received: " .. tohex(data) .. " len: " .. #data)
     local packet = ServerClientPacket.parse(data)
-    print("RX: " .. dump(packet))
+    print("RX: " .. DumpPacket(packet))
+
+    if packet.type == "reliable" then
+      -- send ack
+      tx({
+        peer_id = peer_id,
+        channel = 0,
+        type = "control",
+        sequence_nr = packet.sequence_nr,
+        ack = true
+      })
+    end
 
     if packet.command == "SET_PEER_ID" then
       peer_id = packet.payload.peer_id
       print("Setting peer id to: " .. peer_id)
-    end
-
-    if packet.command == "HELLO" then
-      tx({
-        peer_id = peer_id,
-        channel = 0,
-        type = "control",
-        sequence_nr = packet.sequence_nr,
-        ack = true
-      })
-    end
-
-    if packet.ack then
-      tx({
-        peer_id = peer_id,
-        channel = 0,
-        type = "control",
-        sequence_nr = packet.sequence_nr,
-        ack = true
-      })
 
       tx({
         peer_id = peer_id,
@@ -94,6 +74,19 @@ while true do
       })
 
       -- TODO: send "INIT" after a delay
+    end
+
+    if packet.command == "HELLO" then
+      tx({
+        peer_id = peer_id,
+        channel = 1,
+        type = "original",
+        command = "FIRST_SRP",
+        payload = {
+          -- TODO
+        }
+      })
+
     end
 
   end

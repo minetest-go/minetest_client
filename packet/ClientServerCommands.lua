@@ -12,5 +12,12 @@ return {
 				string.char(0x00) .. string.char(#def.player_name) ..
 				def.player_name
 		end
+	},
+	{
+		id = 80,
+		key = "FIRST_SRP",
+		create = function(def)
+			return ""
+		end
 	}
 }

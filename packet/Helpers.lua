@@ -11,7 +11,7 @@ end
 
 local function extract_string(payload, offset)
 	local size = bytes_to_int( string.byte(payload, offset+1), string.byte(payload, offset+2) )
-	return string.sub(payload, offset+3, offset + size + 3), size+2
+	return string.sub(payload, offset+3, offset + size), size+2
 end
 
 local function create_string(str)

@@ -76,6 +76,7 @@ while true do
       -- TODO: send "INIT" after a delay
     end
 
+    --[[
     if packet.command == "HELLO" then
       tx({
         peer_id = peer_id,
@@ -88,8 +89,8 @@ while true do
           is_empty = 0
         }
       })
-
     end
+    --]]
 
   end
 end

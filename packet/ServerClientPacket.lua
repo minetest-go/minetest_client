@@ -50,6 +50,7 @@ local function parse(buf)
 	-- 4F457403 0001 00 03 FFDD 00 02
 
 	-- 4F457403 0001 00 00 03
+	-- 4F457403 0001 00 03 FFE2 01 00 5602000100104D756C746963726166745F50696C6F74
 
 	local def = {}
 
@@ -88,7 +89,9 @@ local function parse(buf)
 			end
 
 			def.command = cmd.key
-			def.payload = cmd.parse(buf:sub(14))
+			if type(cmd.parse) == "function" then
+				def.payload = cmd.parse(buf:sub(14))
+			end
 		else
 			error("unknown subtype")
 		end

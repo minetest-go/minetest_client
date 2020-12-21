@@ -21,5 +21,15 @@ return {
 				Helpers.create_string(def.verification_key) ..
 				string.char(def.is_empty)
 		end
+	},
+	{
+		id = 36,
+		key = "GOTBLOCKS",
+		create = function()
+			return string.char(0x00) .. -- count
+				Helpers.int_to_bytes(1) ..
+				Helpers.int_to_bytes(1) ..
+				Helpers.int_to_bytes(1)
+		end
 	}
 }

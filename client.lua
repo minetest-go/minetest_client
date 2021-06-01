@@ -69,7 +69,7 @@ while true do
           supp_compr_modes = 0,
           min_net_proto_version = 37,
           max_net_proto_version = 39,
-          player_name = "blah"
+          player_name = "blah" .. math.random(2000)
         }
       })
 

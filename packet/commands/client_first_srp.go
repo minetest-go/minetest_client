@@ -1,6 +1,9 @@
 package commands
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 type ClientFirstSRP struct {
 	Salt            []byte
@@ -37,5 +40,5 @@ func (p *ClientFirstSRP) UnmarshalPacket([]byte) error {
 }
 
 func (p *ClientFirstSRP) String() string {
-	return "{ClientFirstSRP}"
+	return fmt.Sprintf("{ClientFirstSRP #Salt=%d, #VerificationKey=%d}", len(p.Salt), len(p.VerificationKey))
 }

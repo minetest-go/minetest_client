@@ -9,6 +9,8 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 		cmd = &commands.ServerSetPeer{}
 	case 2:
 		cmd = &commands.ServerHello{}
+	case 10:
+		cmd = &commands.ServerAccessDenied{}
 	case 41:
 		cmd = &commands.ServerTimeOfDay{}
 	case 47:

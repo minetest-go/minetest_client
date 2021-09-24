@@ -77,7 +77,7 @@ func (c *Client) onReceive(p *packet.Packet) {
 
 	if p.PacketType == packet.Reliable {
 		if p.ControlType == packet.SetPeerID {
-			fmt.Printf("Got setpeerid command, data: %s", fmt.Sprint(p.Payload))
+			c.PeerID = p.PeerID
 		}
 
 		// send ack
@@ -100,7 +100,7 @@ func (c *Client) rxLoop() {
 			panic(err)
 		}
 
-		fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
+		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
 
 		p, err := packet.Parse(buf[:len])
 		if err != nil {

@@ -20,14 +20,14 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 
-	err = client.Send(packet.CreateOriginal(0, 65500, commands.NewClientInit("test")))
+	err = client.Send(packet.CreateOriginal(client.PeerID, 0, commands.NewClientInit("test")))
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	identifier := []byte("test")
 	passphrase := []byte("enter")
@@ -36,14 +36,14 @@ func main() {
 		panic(err)
 	}
 
-	err = client.Send(packet.CreateOriginal(0, 0, commands.NewClientFirstSRP(salt, verifier)))
+	err = client.Send(packet.CreateOriginal(client.PeerID, 0, commands.NewClientFirstSRP(salt, verifier)))
 	if err != nil {
 		panic(err)
 	}
 
 	time.Sleep(10 * time.Second)
 
-	err = client.Send(packet.CreateControl(0, 65500, packet.Disco))
+	err = client.Send(packet.CreateControl(client.PeerID, 0, packet.Disco))
 	if err != nil {
 		panic(err)
 	}

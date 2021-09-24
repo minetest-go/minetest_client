@@ -122,6 +122,10 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 
 		if p.SubType == Control {
 			p.ControlType = ControlType(data[11])
+
+			if p.ControlType == SetPeerID {
+				p.PeerID = binary.BigEndian.Uint16(data[12:])
+			}
 		} else {
 			p.CommandID = binary.BigEndian.Uint16(data[11:])
 			p.Payload = data[13:]

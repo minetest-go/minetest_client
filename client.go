@@ -8,17 +8,29 @@ import (
 	"net"
 )
 
+type ClientEvent int
+
+const (
+	InitDone ClientEvent = iota
+)
+
+type ClientEventListener interface {
+	OnClientEvent(event ClientEvent)
+}
+
 type Client struct {
-	conn   net.Conn
-	Host   string
-	Port   int
-	PeerID uint16
+	conn      net.Conn
+	Host      string
+	Port      int
+	PeerID    uint16
+	listeners []ClientEventListener
 }
 
 func NewClient(host string, port int) *Client {
 	return &Client{
-		Host: host,
-		Port: port,
+		Host:      host,
+		Port:      port,
+		listeners: make([]ClientEventListener, 0),
 	}
 }
 
@@ -32,7 +44,18 @@ func (c *Client) Start() error {
 	return nil
 }
 
+func (c *Client) AddListener(listener ClientEventListener) {
+	c.listeners = append(c.listeners, listener)
+}
+
+func (c *Client) EmitEvent(event ClientEvent) {
+	for _, listener := range c.listeners {
+		listener.OnClientEvent(event)
+	}
+}
+
 func (c *Client) Send(packet *packet.Packet) error {
+	packet.PeerID = c.PeerID
 	data, err := packet.MarshalPacket()
 	if err != nil {
 		return err
@@ -61,6 +84,10 @@ func (c *Client) onReceive(p *packet.Packet) {
 		err := c.Send(packet.CreateControl(c.PeerID, p.SeqNr, packet.Ack))
 		if err != nil {
 			panic(err)
+		}
+
+		if p.CommandID == 1 {
+			c.EmitEvent(InitDone)
 		}
 	}
 }

@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	//client := NewClient("pandorabox.io", 30000)
 	client := NewClient("edgy1.net", 30025)
 	err := client.Start()
 	if err != nil {
@@ -25,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(60 * time.Second)
+	time.Sleep(3600 * time.Second)
 
 	err = client.Send(packet.CreateControl(0, 65500, packet.Disco))
 	if err != nil {

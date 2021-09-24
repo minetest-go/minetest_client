@@ -15,6 +15,8 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 		cmd = &commands.ServerChatMessage{}
 	case 67:
 		cmd = &commands.ServerDetachedInventory{}
+	case 83:
+		cmd = &commands.ServerDeleteParticleSpawner{}
 	}
 
 	if cmd != nil {

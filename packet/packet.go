@@ -11,6 +11,16 @@ type Packet struct {
 	Channel    uint8
 }
 
+func CreateReliable(peerId uint16, seqNr uint16, command Command) *Packet {
+	return &Packet{
+		PacketType: Reliable,
+		SubType:    Original,
+		Command:    command,
+		PeerID:     peerId,
+		SeqNr:      seqNr,
+	}
+}
+
 func CreatePacket(packetType PacketType, subType PacketType, peerId uint16, seqNr uint16, command Command) *Packet {
 	return &Packet{
 		PacketType: packetType,

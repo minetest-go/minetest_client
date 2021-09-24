@@ -12,7 +12,7 @@ func main() {
 	fmt.Println("ok")
 
 	peerInit := commands.NewClientPeerInit()
-	p := packet.CreatePacket(packet.Reliable, packet.Original, 0, 65500, peerInit)
+	p := packet.CreateReliable(0, 65500, peerInit)
 	data, err := p.MarshalPacket()
 	if err != nil {
 		panic(err)

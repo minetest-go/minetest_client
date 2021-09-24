@@ -24,5 +24,5 @@ func (p *ServerChatMessage) UnmarshalPacket(payload []byte) error {
 }
 
 func (p *ServerChatMessage) String() string {
-	return fmt.Sprintf("{ServerChatMessage Message=%s}", p.Message)
+	return fmt.Sprintf("{ServerChatMessage Message='%s'}", p.Message)
 }

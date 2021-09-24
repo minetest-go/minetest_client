@@ -61,7 +61,7 @@ func (c *Client) Send(packet *packet.Packet) error {
 		return err
 	}
 	fmt.Printf("Sending packet: %s\n", packet)
-	fmt.Printf("Sending raw: %s\n", fmt.Sprint(data))
+	//fmt.Printf("Sending raw: %s\n", fmt.Sprint(data))
 
 	_, err = c.conn.Write(data)
 	return err
@@ -100,7 +100,7 @@ func (c *Client) rxLoop() {
 			panic(err)
 		}
 
-		fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
+		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
 
 		p, err := packet.Parse(buf[:len])
 		if err != nil {

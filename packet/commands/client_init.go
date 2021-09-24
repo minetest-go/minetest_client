@@ -1,4 +1,4 @@
-package packet
+package commands
 
 import "encoding/binary"
 
@@ -20,12 +20,16 @@ func NewClientInit(playername string) *ClientInit {
 	}
 }
 
+func (p *ClientInit) GetCommandId() uint8 {
+	return 2
+}
+
 func (p *ClientInit) MarshalPacket() ([]byte, error) {
 	packet := make([]byte, 1+2+2+2)
-	packet = append(packet, byte(p.ClientMax))
-	binary.BigEndian.PutUint16(packet, p.SupportedCompressionModes)
-	binary.BigEndian.PutUint16(packet, p.MinNetProtoVersion)
-	binary.BigEndian.PutUint16(packet, p.MaxNetProtoVersion)
+	packet[0] = byte(p.ClientMax)
+	binary.BigEndian.PutUint16(packet[1:], p.SupportedCompressionModes)
+	binary.BigEndian.PutUint16(packet[3:], p.MinNetProtoVersion)
+	binary.BigEndian.PutUint16(packet[5:], p.MaxNetProtoVersion)
 
 	packet = append(packet, 0, byte(len(p.PlayerName)))
 	packet = append(packet, []byte(p.PlayerName)...)

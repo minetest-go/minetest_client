@@ -7,5 +7,5 @@ type Serializeable interface {
 
 type Command interface {
 	Serializeable
-	GetCommandId() uint8
+	GetCommandId() uint16
 }

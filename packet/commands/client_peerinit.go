@@ -7,7 +7,7 @@ func NewClientPeerInit() *ClientPeerInit {
 	return &ClientPeerInit{}
 }
 
-func (p *ClientPeerInit) GetCommandId() uint8 {
+func (p *ClientPeerInit) GetCommandId() uint16 {
 	return 0
 }
 

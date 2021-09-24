@@ -1,14 +1,28 @@
 package packet
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"minetest_client/packet/commands"
+)
 
 type Packet struct {
-	Command    Command
-	PacketType PacketType
-	SubType    PacketType
-	PeerID     uint16
-	SeqNr      uint16
-	Channel    uint8
+	Command     Command
+	PacketType  PacketType
+	SubType     PacketType
+	ControlType ControlType
+	PeerID      uint16
+	SeqNr       uint16
+	Channel     uint8
+	Payload     []byte
+	CommandID   uint16
+}
+
+func Parse(data []byte) (*Packet, error) {
+	p := &Packet{}
+	err := p.UnmarshalPacket(data)
+	return p, err
 }
 
 func CreateReliable(peerId uint16, seqNr uint16, command Command) *Packet {
@@ -18,6 +32,24 @@ func CreateReliable(peerId uint16, seqNr uint16, command Command) *Packet {
 		Command:    command,
 		PeerID:     peerId,
 		SeqNr:      seqNr,
+	}
+}
+
+func CreateOriginal(peerId uint16, seqNr uint16, command Command) *Packet {
+	return &Packet{
+		PacketType: Original,
+		Command:    command,
+		PeerID:     peerId,
+		SeqNr:      seqNr,
+	}
+}
+
+func CreateControl(peerId uint16, seqNr uint16, controlType ControlType) *Packet {
+	return &Packet{
+		PacketType:  Control,
+		ControlType: controlType,
+		PeerID:      peerId,
+		SeqNr:       seqNr,
 	}
 }
 
@@ -36,20 +68,75 @@ func (p *Packet) MarshalPacket() ([]byte, error) {
 	copy(packet[0:], ProtocolID)
 	binary.BigEndian.PutUint16(packet[4:], p.PeerID)
 	packet[6] = p.Channel
-	packet[7] = p.Command.GetCommandId()
+	packet[7] = byte(p.PacketType)
 
 	if p.PacketType == Reliable {
 		bytes := make([]byte, 2)
 		binary.BigEndian.PutUint16(bytes, p.SeqNr)
 		packet = append(packet, bytes...)
 		packet = append(packet, byte(p.SubType))
+		payload, err := p.Command.MarshalPacket()
+		if err != nil {
+			return nil, err
+		}
+		packet = append(packet, payload...)
+
+	} else if p.PacketType == Control {
+		bytes := make([]byte, 3)
+		bytes[0] = byte(p.ControlType)
+		binary.BigEndian.PutUint16(bytes[1:], p.SeqNr)
+		packet = append(packet, bytes...)
+
+	} else if p.PacketType == Original {
+		bytes := make([]byte, 2)
+		binary.BigEndian.PutUint16(bytes, p.Command.GetCommandId())
+		packet = append(packet, bytes...)
+		payload, err := p.Command.MarshalPacket()
+		if err != nil {
+			return nil, err
+		}
+		packet = append(packet, payload...)
+
 	}
 
-	payload, err := p.Command.MarshalPacket()
-	packet = append(packet, payload...)
-	return packet, err
+	return packet, nil
 }
 
-func (p *Packet) UnmarshalPacket([]byte) error {
+func (p *Packet) UnmarshalPacket(data []byte) error {
+	if len(data) < 5 {
+		return errors.New("invalid packet length")
+	}
+
+	for i, sig := range ProtocolID {
+		if data[i] != sig {
+			return errors.New("invalid protocol_id")
+		}
+	}
+
+	p.PeerID = binary.BigEndian.Uint16(data[4:])
+	p.Channel = data[6]
+	p.PacketType = PacketType(data[7])
+
+	if p.PacketType == Reliable {
+		p.SeqNr = binary.BigEndian.Uint16(data[8:])
+		p.CommandID = binary.BigEndian.Uint16(data[10:])
+		p.Payload = data[12:]
+		return p.unmarshalCommand()
+	}
+
 	return nil
+}
+
+func (p *Packet) unmarshalCommand() error {
+	if p.CommandID == 1 {
+		p.Command = &commands.ServerSetPeer{}
+		return p.Command.UnmarshalPacket(p.Payload)
+	}
+
+	return nil
+}
+
+func (p *Packet) String() string {
+	return fmt.Sprintf("Type: %d, PeerID: %d, Channel: %d, SeqNr: %d, Subtype: %d, CommandID: %d, Command: %s",
+		p.PacketType, p.PeerID, p.Channel, p.SeqNr, p.SubType, p.CommandID, p.Command)
 }

@@ -1,40 +1,27 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
 	"minetest_client/packet"
 	"minetest_client/packet/commands"
-	"net"
+	"time"
 )
 
 func main() {
-	fmt.Println("ok")
-
-	peerInit := commands.NewClientPeerInit()
-	p := packet.CreateReliable(0, 65500, peerInit)
-	data, err := p.MarshalPacket()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(data)
-
-	conn, err := net.Dial("udp", "127.0.0.1:30000")
+	client := NewClient("127.0.0.1", 30000)
+	err := client.Start()
 	if err != nil {
 		panic(err)
 	}
 
-	_, err = conn.Write(data)
+	err = client.Send(packet.CreateReliable(0, 65500, commands.NewClientPeerInit()))
 	if err != nil {
 		panic(err)
 	}
 
-	buf := make([]byte, 4096)
-	len, err := bufio.NewReader(conn).Read(buf)
+	err = client.Send(packet.CreateOriginal(0, 65500, commands.NewClientInit("test")))
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(buf[:len])
-
+	time.Sleep(10 * time.Second)
 }

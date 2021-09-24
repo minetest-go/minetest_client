@@ -20,7 +20,7 @@ func NewClientInit(playername string) *ClientInit {
 	}
 }
 
-func (p *ClientInit) GetCommandId() uint8 {
+func (p *ClientInit) GetCommandId() uint16 {
 	return 2
 }
 

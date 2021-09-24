@@ -8,6 +8,7 @@ services:
    - "world_data:/root/.minetest/worlds/world"
   ports:
    - "30000:30000/udp"
+  command: ["/usr/local/bin/minetestserver", "--config", "/etc/minetest/minetest.conf", "--verbose"]
 
 volumes:
   world_data: {}

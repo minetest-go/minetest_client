@@ -52,7 +52,7 @@ func (c *Client) onReceive(p *packet.Packet) {
 			// Set peer id
 			setpeer, ok := p.Command.(*commands.ServerSetPeer)
 			if ok {
-				fmt.Printf("Setting PeerID to %d\n", c.PeerID)
+				fmt.Printf("Setting PeerID to %d\n", setpeer.PeerID)
 				c.PeerID = setpeer.PeerID
 			}
 		}

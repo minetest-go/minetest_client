@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"minetest_client/packet/commands"
 )
 
 type Packet struct {
@@ -119,24 +118,25 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 
 	if p.PacketType == Reliable {
 		p.SeqNr = binary.BigEndian.Uint16(data[8:])
-		p.CommandID = binary.BigEndian.Uint16(data[10:])
-		p.Payload = data[12:]
-		return p.unmarshalCommand()
-	}
+		p.SubType = PacketType(data[10])
 
-	return nil
-}
-
-func (p *Packet) unmarshalCommand() error {
-	if p.CommandID == 1 {
-		p.Command = &commands.ServerSetPeer{}
-		return p.Command.UnmarshalPacket(p.Payload)
+		if p.SubType == Control {
+			p.ControlType = ControlType(data[11])
+		} else {
+			p.CommandID = binary.BigEndian.Uint16(data[11:])
+			p.Payload = data[13:]
+			cmd, err := CreateCommand(p.CommandID, p.Payload)
+			p.Command = cmd
+			return err
+		}
 	}
 
 	return nil
 }
 
 func (p *Packet) String() string {
-	return fmt.Sprintf("Type: %d, PeerID: %d, Channel: %d, SeqNr: %d, Subtype: %d, CommandID: %d, Command: %s",
-		p.PacketType, p.PeerID, p.Channel, p.SeqNr, p.SubType, p.CommandID, p.Command)
+	return fmt.Sprintf("Type: %s, PeerID: %d, Channel: %d, SeqNr: %d,"+
+		"Subtype: %s, ControlType: %s CommandID: %d, Command: %s",
+		p.PacketType, p.PeerID, p.Channel, p.SeqNr,
+		p.SubType, p.ControlType, p.CommandID, p.Command)
 }

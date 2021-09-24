@@ -1,6 +1,9 @@
 package commands
 
-import "encoding/binary"
+import (
+	"encoding/binary"
+	"fmt"
+)
 
 type ClientInit struct {
 	ClientMax                 int
@@ -39,4 +42,9 @@ func (p *ClientInit) MarshalPacket() ([]byte, error) {
 
 func (p *ClientInit) UnmarshalPacket([]byte) error {
 	return nil
+}
+
+func (p *ClientInit) String() string {
+	return fmt.Sprintf("{ClientInit ClientMax=%d, SupportedCompressionModes=%d, PlayerName=%s}",
+		p.ClientMax, p.SupportedCompressionModes, p.PlayerName)
 }

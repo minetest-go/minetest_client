@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	client := NewClient("127.0.0.1", 30000)
+	client := NewClient("edgy1.net", 30025)
 	err := client.Start()
 	if err != nil {
 		panic(err)
@@ -18,10 +18,17 @@ func main() {
 		panic(err)
 	}
 
+	time.Sleep(2 * time.Second)
+
 	err = client.Send(packet.CreateOriginal(0, 65500, commands.NewClientInit("test")))
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(60 * time.Second)
+
+	err = client.Send(packet.CreateControl(0, 65500, packet.Disco))
+	if err != nil {
+		panic(err)
+	}
 }

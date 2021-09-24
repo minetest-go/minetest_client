@@ -18,3 +18,7 @@ func (p *ClientPeerInit) MarshalPacket() ([]byte, error) {
 func (p *ClientPeerInit) UnmarshalPacket([]byte) error {
 	return nil
 }
+
+func (p *ClientPeerInit) String() string {
+	return "{ClientPeerInit}"
+}

@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"minetest_client/packet"
-	"minetest_client/packet/commands"
 	"net"
 )
 
@@ -23,6 +22,7 @@ type Client struct {
 	Host      string
 	Port      int
 	PeerID    uint16
+	SeqNr     uint16
 	listeners []ClientEventListener
 }
 
@@ -30,6 +30,7 @@ func NewClient(host string, port int) *Client {
 	return &Client{
 		Host:      host,
 		Port:      port,
+		SeqNr:     65500,
 		listeners: make([]ClientEventListener, 0),
 	}
 }
@@ -55,7 +56,11 @@ func (c *Client) EmitEvent(event ClientEvent) {
 }
 
 func (c *Client) Send(packet *packet.Packet) error {
-	packet.PeerID = c.PeerID
+	if packet.SeqNr == 0 {
+		packet.SeqNr = c.SeqNr
+		c.SeqNr++
+	}
+
 	data, err := packet.MarshalPacket()
 	if err != nil {
 		return err
@@ -71,13 +76,8 @@ func (c *Client) onReceive(p *packet.Packet) {
 	fmt.Printf("Received packet: %s\n", p)
 
 	if p.PacketType == packet.Reliable {
-		if p.CommandID == 1 {
-			// Set peer id
-			setpeer, ok := p.Command.(*commands.ServerSetPeer)
-			if ok {
-				fmt.Printf("Setting PeerID to %d\n", setpeer.PeerID)
-				c.PeerID = setpeer.PeerID
-			}
+		if p.ControlType == packet.SetPeerID {
+			fmt.Printf("Got setpeerid command, data: %s", fmt.Sprint(p.Payload))
 		}
 
 		// send ack
@@ -100,7 +100,7 @@ func (c *Client) rxLoop() {
 			panic(err)
 		}
 
-		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
+		fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
 
 		p, err := packet.Parse(buf[:len])
 		if err != nil {

@@ -21,6 +21,8 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 		cmd = &commands.ServerDeleteParticleSpawner{}
 	case 86:
 		cmd = &commands.ServerUpdatePlayerList{}
+	case 96:
+		cmd = &commands.ServerSRPBytesSB{}
 	}
 
 	if cmd != nil {

@@ -7,23 +7,16 @@ import (
 	"net"
 )
 
-type ClientEvent int
-
-const (
-	InitDone ClientEvent = iota
-)
-
-type ClientEventListener interface {
-	OnClientEvent(event ClientEvent)
+type ClientPacketListener interface {
+	OnPacketReceive(p *packet.Packet)
 }
 
 type Client struct {
 	conn      net.Conn
 	Host      string
 	Port      int
-	PeerID    uint16
 	SeqNr     uint16
-	listeners []ClientEventListener
+	listeners []ClientPacketListener
 }
 
 func NewClient(host string, port int) *Client {
@@ -31,7 +24,7 @@ func NewClient(host string, port int) *Client {
 		Host:      host,
 		Port:      port,
 		SeqNr:     65500,
-		listeners: make([]ClientEventListener, 0),
+		listeners: make([]ClientPacketListener, 0),
 	}
 }
 
@@ -45,14 +38,8 @@ func (c *Client) Start() error {
 	return nil
 }
 
-func (c *Client) AddListener(listener ClientEventListener) {
+func (c *Client) AddListener(listener ClientPacketListener) {
 	c.listeners = append(c.listeners, listener)
-}
-
-func (c *Client) EmitEvent(event ClientEvent) {
-	for _, listener := range c.listeners {
-		listener.OnClientEvent(event)
-	}
 }
 
 func (c *Client) Send(packet *packet.Packet) error {
@@ -75,20 +62,8 @@ func (c *Client) Send(packet *packet.Packet) error {
 func (c *Client) onReceive(p *packet.Packet) {
 	fmt.Printf("Received packet: %s\n", p)
 
-	if p.PacketType == packet.Reliable {
-		if p.ControlType == packet.SetPeerID {
-			c.PeerID = p.PeerID
-		}
-
-		// send ack
-		err := c.Send(packet.CreateControl(c.PeerID, p.SeqNr, packet.Ack))
-		if err != nil {
-			panic(err)
-		}
-
-		if p.CommandID == 1 {
-			c.EmitEvent(InitDone)
-		}
+	for _, listener := range c.listeners {
+		listener.OnPacketReceive(p)
 	}
 }
 

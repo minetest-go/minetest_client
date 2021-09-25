@@ -7,6 +7,25 @@ import (
 	"time"
 )
 
+type ClientHandler struct {
+	peerID uint16
+	client *Client
+}
+
+func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
+	if p.PacketType == packet.Reliable {
+		if p.ControlType == packet.SetPeerID {
+			ch.peerID = p.PeerID
+		}
+
+		// send ack
+		err := ch.client.Send(packet.CreateControl(ch.peerID, p.SeqNr, packet.Ack))
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func main() {
 	//client := NewClient("pandorabox.io", 30000)
 	client := NewClient("127.0.0.1", 30000)
@@ -15,6 +34,9 @@ func main() {
 		panic(err)
 	}
 
+	ch := &ClientHandler{client: client}
+	client.AddListener(ch)
+
 	err = client.Send(packet.CreateReliable(0, 65500, commands.NewClientPeerInit()))
 	if err != nil {
 		panic(err)
@@ -22,7 +44,7 @@ func main() {
 
 	time.Sleep(1 * time.Second)
 
-	err = client.Send(packet.CreateOriginal(client.PeerID, 0, commands.NewClientInit("test")))
+	err = client.Send(packet.CreateOriginal(ch.peerID, 0, commands.NewClientInit("test")))
 	if err != nil {
 		panic(err)
 	}
@@ -48,14 +70,14 @@ func main() {
 		panic(err)
 	}
 
-	err = client.Send(packet.CreateReliable(client.PeerID, 0, commands.NewClientSRPBytesA(pub_a)))
+	err = client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesA(pub_a)))
 	if err != nil {
 		panic(err)
 	}
 
 	time.Sleep(10 * time.Second)
 
-	err = client.Send(packet.CreateControl(client.PeerID, 0, packet.Disco))
+	err = client.Send(packet.CreateControl(ch.peerID, 0, packet.Disco))
 	if err != nil {
 		panic(err)
 	}

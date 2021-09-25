@@ -21,7 +21,7 @@ func (p *ServerSRPBytesSB) MarshalPacket() ([]byte, error) {
 func (p *ServerSRPBytesSB) UnmarshalPacket(payload []byte) error {
 	bytes_s_length := binary.BigEndian.Uint16(payload[0:])
 	p.BytesS = payload[2 : bytes_s_length+2]
-	bytes_b_length := binary.BigEndian.Uint16(payload[:bytes_s_length+2])
+	bytes_b_length := binary.BigEndian.Uint16(payload[bytes_s_length+2:])
 	p.BytesB = payload[bytes_s_length+2+2 : bytes_b_length+bytes_s_length+2+2]
 	return nil
 }

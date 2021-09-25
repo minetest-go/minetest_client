@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/sha512"
 	"minetest_client/packet"
 	"minetest_client/packet/commands"
 	"minetest_client/srp"
@@ -58,11 +57,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 			identifier := []byte("test")
 			passphrase := []byte("enter")
 
-			pass_prehash := append(identifier, ':')
-			pass_prehash = append(pass_prehash, passphrase...)
-			pass_hash := sha512.Sum512(pass_prehash)
-
-			clientK, err := srp.CompleteHandshake(ch.SRPPubA, ch.SRPPrivA, identifier, pass_hash[0:], sb_cmd.BytesS, sb_cmd.BytesB)
+			clientK, err := srp.CompleteHandshake(ch.SRPPubA, ch.SRPPrivA, identifier, passphrase, sb_cmd.BytesS, sb_cmd.BytesB)
 			if err != nil {
 				panic(err)
 			}

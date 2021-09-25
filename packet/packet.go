@@ -72,7 +72,6 @@ func (p *Packet) MarshalPacket() ([]byte, error) {
 	packet[7] = byte(p.PacketType)
 
 	if p.PacketType == Reliable {
-		//TODO: split packet
 		bytes := make([]byte, 5)
 		binary.BigEndian.PutUint16(bytes, p.SeqNr)
 		bytes[2] = byte(p.SubType)
@@ -125,13 +124,16 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 		p.SeqNr = binary.BigEndian.Uint16(data[8:])
 		p.SubType = PacketType(data[10])
 
-		if p.SubType == Control {
+		switch p.SubType {
+		case Control:
 			p.ControlType = ControlType(data[11])
 
 			if p.ControlType == SetPeerID {
 				p.PeerID = binary.BigEndian.Uint16(data[12:])
 			}
-		} else {
+		default:
+			fmt.Printf("Unknown packet: %s\n", fmt.Sprint(data))
+			//TODO: split
 			p.CommandID = binary.BigEndian.Uint16(data[11:])
 			p.Payload = data[13:]
 			cmd, err := CreateCommand(p.CommandID, p.Payload)

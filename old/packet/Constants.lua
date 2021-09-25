@@ -1,4 +1,0 @@
-
-return {
-	protocol_id = string.char(0x4f, 0x45, 0x74, 0x03)
-};

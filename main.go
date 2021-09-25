@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha512"
 	"minetest_client/packet"
 	"minetest_client/packet/commands"
 	"minetest_client/srp"
@@ -8,8 +9,10 @@ import (
 )
 
 type ClientHandler struct {
-	peerID uint16
-	client *Client
+	peerID   uint16
+	client   *Client
+	SRPPubA  []byte
+	SRPPrivA []byte
 }
 
 func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
@@ -34,12 +37,39 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 		}
 
 		if p.CommandID == commands.ServerCommandHello {
-			pub_a, _, err := srp.InitiateHandshake()
+			var err error
+			ch.SRPPubA, ch.SRPPrivA, err = srp.InitiateHandshake()
 			if err != nil {
 				panic(err)
 			}
 
-			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesA(pub_a)))
+			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesA(ch.SRPPubA)))
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		if p.CommandID == commands.ServerCommandSRPBytesSB {
+			sb_cmd, ok := p.Command.(*commands.ServerSRPBytesSB)
+			if !ok {
+				panic("invalid type")
+			}
+
+			identifier := []byte("test")
+			passphrase := []byte("enter")
+
+			pass_prehash := append(identifier, ':')
+			pass_prehash = append(pass_prehash, passphrase...)
+			pass_hash := sha512.Sum512(pass_prehash)
+
+			clientK, err := srp.CompleteHandshake(ch.SRPPubA, ch.SRPPrivA, identifier, pass_hash[0:], sb_cmd.BytesS, sb_cmd.BytesB)
+			if err != nil {
+				panic(err)
+			}
+
+			proof := srp.ClientProof(identifier, sb_cmd.BytesS, ch.SRPPubA, sb_cmd.BytesB, clientK)
+
+			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesM(proof)))
 			if err != nil {
 				panic(err)
 			}

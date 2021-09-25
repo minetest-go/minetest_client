@@ -1,24 +1,21 @@
 package commands
 
-type ClientCommand uint16
-
 const (
-	ClientCommandPeerInit  = 0
-	ClientCommandInit      = 2
-	ClientCommandFirstSRP  = 80
-	ClientCommandSRPBytesA = 81
+	ClientCommandPeerInit  uint16 = 0
+	ClientCommandInit      uint16 = 2
+	ClientCommandFirstSRP  uint16 = 80
+	ClientCommandSRPBytesA uint16 = 81
+	ClientCommandSRPBytesM uint16 = 82
 )
 
-type ServerCommand uint16
-
 const (
-	ServerCommandSetPeer               = 1
-	ServerCommandHello                 = 2
-	ServerCommandAccessDenied          = 10
-	ServerCommandTimeOfDay             = 41
-	ServerCommandChatMessage           = 47
-	ServerCommandDetachedInventory     = 67
-	ServerCommandDeleteParticleSpawner = 83
-	ServerCommandUpdatePlayerList      = 86
-	ServerCommandSRPBytesSB            = 96
+	ServerCommandSetPeer               uint16 = 1
+	ServerCommandHello                 uint16 = 2
+	ServerCommandAccessDenied          uint16 = 10
+	ServerCommandTimeOfDay             uint16 = 41
+	ServerCommandChatMessage           uint16 = 47
+	ServerCommandDetachedInventory     uint16 = 67
+	ServerCommandDeleteParticleSpawner uint16 = 83
+	ServerCommandUpdatePlayerList      uint16 = 86
+	ServerCommandSRPBytesSB            uint16 = 96
 )

@@ -33,5 +33,5 @@ func (p *ClientSRPBytesA) UnmarshalPacket([]byte) error {
 }
 
 func (p *ClientSRPBytesA) String() string {
-	return fmt.Sprintf("{ClientSRPBytesA #ClientSRPBytesA=%d}", len(p.BytesA))
+	return fmt.Sprintf("{ClientSRPBytesA #BytesA=%d}", len(p.BytesA))
 }

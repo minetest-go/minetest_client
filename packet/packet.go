@@ -72,6 +72,7 @@ func (p *Packet) MarshalPacket() ([]byte, error) {
 	packet[7] = byte(p.PacketType)
 
 	if p.PacketType == Reliable {
+		//TODO: split packet
 		bytes := make([]byte, 5)
 		binary.BigEndian.PutUint16(bytes, p.SeqNr)
 		bytes[2] = byte(p.SubType)

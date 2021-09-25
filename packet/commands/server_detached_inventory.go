@@ -9,7 +9,7 @@ type ServerDetachedInventory struct {
 }
 
 func (p *ServerDetachedInventory) GetCommandId() uint16 {
-	return 67
+	return ServerCommandDetachedInventory
 }
 
 func (p *ServerDetachedInventory) MarshalPacket() ([]byte, error) {

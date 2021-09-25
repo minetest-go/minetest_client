@@ -14,7 +14,7 @@ type ServerHello struct {
 }
 
 func (p *ServerHello) GetCommandId() uint16 {
-	return 2
+	return ServerCommandHello
 }
 
 func (p *ServerHello) MarshalPacket() ([]byte, error) {

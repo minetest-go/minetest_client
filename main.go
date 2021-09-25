@@ -16,6 +16,15 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 	if p.PacketType == packet.Reliable {
 		if p.ControlType == packet.SetPeerID {
 			ch.peerID = p.PeerID
+
+			go func() {
+				// deferred init
+				time.Sleep(2 * time.Second)
+				err := ch.client.Send(packet.CreateOriginal(ch.peerID, 0, commands.NewClientInit("test")))
+				if err != nil {
+					panic(err)
+				}
+			}()
 		}
 
 		// send ack
@@ -23,6 +32,19 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 		if err != nil {
 			panic(err)
 		}
+
+		if p.CommandID == commands.ServerCommandHello {
+			pub_a, _, err := srp.InitiateHandshake()
+			if err != nil {
+				panic(err)
+			}
+
+			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesA(pub_a)))
+			if err != nil {
+				panic(err)
+			}
+		}
+
 	}
 }
 
@@ -42,13 +64,6 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(1 * time.Second)
-
-	err = client.Send(packet.CreateOriginal(ch.peerID, 0, commands.NewClientInit("test")))
-	if err != nil {
-		panic(err)
-	}
-
 	time.Sleep(2 * time.Second)
 
 	/*
@@ -64,16 +79,6 @@ func main() {
 			panic(err)
 		}
 	*/
-
-	pub_a, _, err := srp.InitiateHandshake()
-	if err != nil {
-		panic(err)
-	}
-
-	err = client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesA(pub_a)))
-	if err != nil {
-		panic(err)
-	}
 
 	time.Sleep(10 * time.Second)
 

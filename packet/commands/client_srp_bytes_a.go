@@ -16,7 +16,7 @@ func NewClientSRPBytesA(bytes_a []byte) *ClientSRPBytesA {
 }
 
 func (p *ClientSRPBytesA) GetCommandId() uint16 {
-	return 81
+	return ClientCommandSRPBytesA
 }
 
 func (p *ClientSRPBytesA) MarshalPacket() ([]byte, error) {

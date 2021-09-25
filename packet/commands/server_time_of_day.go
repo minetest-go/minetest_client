@@ -10,7 +10,7 @@ type ServerTimeOfDay struct {
 }
 
 func (p *ServerTimeOfDay) GetCommandId() uint16 {
-	return 2
+	return ServerCommandTimeOfDay
 }
 
 func (p *ServerTimeOfDay) MarshalPacket() ([]byte, error) {

@@ -18,7 +18,7 @@ type ServerUpdatePlayerList struct {
 }
 
 func (p *ServerUpdatePlayerList) GetCommandId() uint16 {
-	return 86
+	return ServerCommandUpdatePlayerList
 }
 
 func (p *ServerUpdatePlayerList) MarshalPacket() ([]byte, error) {

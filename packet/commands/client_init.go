@@ -24,7 +24,7 @@ func NewClientInit(playername string) *ClientInit {
 }
 
 func (p *ClientInit) GetCommandId() uint16 {
-	return 2
+	return ClientCommandInit
 }
 
 func (p *ClientInit) MarshalPacket() ([]byte, error) {

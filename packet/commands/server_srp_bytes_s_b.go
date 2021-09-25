@@ -11,7 +11,7 @@ type ServerSRPBytesSB struct {
 }
 
 func (p *ServerSRPBytesSB) GetCommandId() uint16 {
-	return 96
+	return ServerCommandSRPBytesSB
 }
 
 func (p *ServerSRPBytesSB) MarshalPacket() ([]byte, error) {

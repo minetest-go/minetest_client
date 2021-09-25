@@ -10,7 +10,7 @@ type ServerDeleteParticleSpawner struct {
 }
 
 func (p *ServerDeleteParticleSpawner) GetCommandId() uint16 {
-	return 83
+	return ServerCommandDeleteParticleSpawner
 }
 
 func (p *ServerDeleteParticleSpawner) MarshalPacket() ([]byte, error) {

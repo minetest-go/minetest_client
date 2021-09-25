@@ -5,23 +5,23 @@ import "minetest_client/packet/commands"
 func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 	var cmd Command = nil
 	switch commandId {
-	case 1:
+	case commands.ServerCommandSetPeer:
 		cmd = &commands.ServerSetPeer{}
-	case 2:
+	case commands.ServerCommandHello:
 		cmd = &commands.ServerHello{}
-	case 10:
+	case commands.ServerCommandAccessDenied:
 		cmd = &commands.ServerAccessDenied{}
-	case 41:
+	case commands.ServerCommandTimeOfDay:
 		cmd = &commands.ServerTimeOfDay{}
-	case 47:
+	case commands.ServerCommandChatMessage:
 		cmd = &commands.ServerChatMessage{}
-	case 67:
+	case commands.ServerCommandDetachedInventory:
 		cmd = &commands.ServerDetachedInventory{}
-	case 83:
+	case commands.ServerCommandDeleteParticleSpawner:
 		cmd = &commands.ServerDeleteParticleSpawner{}
-	case 86:
+	case commands.ServerCommandUpdatePlayerList:
 		cmd = &commands.ServerUpdatePlayerList{}
-	case 96:
+	case commands.ServerCommandSRPBytesSB:
 		cmd = &commands.ServerSRPBytesSB{}
 	}
 

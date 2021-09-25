@@ -9,7 +9,7 @@ type ServerChatMessage struct {
 }
 
 func (p *ServerChatMessage) GetCommandId() uint16 {
-	return 47
+	return ServerCommandChatMessage
 }
 
 func (p *ServerChatMessage) MarshalPacket() ([]byte, error) {

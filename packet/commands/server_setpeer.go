@@ -10,7 +10,7 @@ type ServerSetPeer struct {
 }
 
 func (p *ServerSetPeer) GetCommandId() uint16 {
-	return 1
+	return ServerCommandSetPeer
 }
 
 func (p *ServerSetPeer) MarshalPacket() ([]byte, error) {

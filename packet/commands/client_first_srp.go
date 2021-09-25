@@ -18,7 +18,7 @@ func NewClientFirstSRP(salt []byte, verificationKey []byte) *ClientFirstSRP {
 }
 
 func (p *ClientFirstSRP) GetCommandId() uint16 {
-	return 80
+	return ClientCommandFirstSRP
 }
 
 func (p *ClientFirstSRP) MarshalPacket() ([]byte, error) {

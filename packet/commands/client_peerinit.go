@@ -8,7 +8,7 @@ func NewClientPeerInit() *ClientPeerInit {
 }
 
 func (p *ClientPeerInit) GetCommandId() uint16 {
-	return 0
+	return ClientCommandPeerInit
 }
 
 func (p *ClientPeerInit) MarshalPacket() ([]byte, error) {

@@ -3,7 +3,7 @@ package commands
 type ServerAccessDenied struct{}
 
 func (p *ServerAccessDenied) GetCommandId() uint16 {
-	return 10
+	return ServerCommandAccessDenied
 }
 
 func (p *ServerAccessDenied) MarshalPacket() ([]byte, error) {

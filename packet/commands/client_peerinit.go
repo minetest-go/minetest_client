@@ -12,7 +12,7 @@ func (p *ClientPeerInit) GetCommandId() uint16 {
 }
 
 func (p *ClientPeerInit) MarshalPacket() ([]byte, error) {
-	return []byte{0, 0}, nil
+	return []byte{}, nil
 }
 
 func (p *ClientPeerInit) UnmarshalPacket([]byte) error {

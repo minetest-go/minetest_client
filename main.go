@@ -27,16 +27,28 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2 * time.Second)
 
-	identifier := []byte("test")
-	passphrase := []byte("enter")
-	salt, verifier, err := srp.NewClient(identifier, passphrase)
+	/*
+		identifier := []byte("test")
+		passphrase := []byte("enter")
+		salt, verifier, err := srp.NewClient(identifier, passphrase)
+		if err != nil {
+			panic(err)
+		}
+
+		err = client.Send(packet.CreateReliable(client.PeerID, 0, commands.NewClientFirstSRP(salt, verifier)))
+		if err != nil {
+			panic(err)
+		}
+	*/
+
+	pub_a, _, err := srp.InitiateHandshake()
 	if err != nil {
 		panic(err)
 	}
 
-	err = client.Send(packet.CreateOriginal(client.PeerID, 0, commands.NewClientFirstSRP(salt, verifier)))
+	err = client.Send(packet.CreateReliable(client.PeerID, 0, commands.NewClientSRPBytesA(pub_a)))
 	if err != nil {
 		panic(err)
 	}

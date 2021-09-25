@@ -31,6 +31,7 @@ func CreateReliable(peerId uint16, seqNr uint16, command Command) *Packet {
 		Command:    command,
 		PeerID:     peerId,
 		SeqNr:      seqNr,
+		Channel:    1,
 	}
 }
 
@@ -40,6 +41,7 @@ func CreateOriginal(peerId uint16, seqNr uint16, command Command) *Packet {
 		Command:    command,
 		PeerID:     peerId,
 		SeqNr:      seqNr,
+		Channel:    1,
 	}
 }
 
@@ -70,10 +72,12 @@ func (p *Packet) MarshalPacket() ([]byte, error) {
 	packet[7] = byte(p.PacketType)
 
 	if p.PacketType == Reliable {
-		bytes := make([]byte, 2)
+		bytes := make([]byte, 5)
 		binary.BigEndian.PutUint16(bytes, p.SeqNr)
+		bytes[2] = byte(p.SubType)
+		binary.BigEndian.PutUint16(bytes[3:], p.Command.GetCommandId())
+
 		packet = append(packet, bytes...)
-		packet = append(packet, byte(p.SubType))
 		payload, err := p.Command.MarshalPacket()
 		if err != nil {
 			return nil, err

@@ -7,15 +7,28 @@ import (
 )
 
 type Packet struct {
-	Command     Command
-	PacketType  PacketType
-	SubType     PacketType
-	ControlType ControlType
-	PeerID      uint16
+	Command      Command
+	PacketType   PacketType
+	SubType      PacketType
+	ControlType  ControlType
+	PeerID       uint16
+	SeqNr        uint16
+	Channel      uint8
+	Payload      []byte
+	CommandID    uint16
+	SplitPayload *SplitPayload
+}
+
+type SplitPayload struct {
 	SeqNr       uint16
-	Channel     uint8
-	Payload     []byte
-	CommandID   uint16
+	ChunkCount  uint16
+	ChunkNumber uint16
+	Data        []byte
+}
+
+func (spl *SplitPayload) String() string {
+	return fmt.Sprintf("{SplitPayload SeqNr=%d, Chunk=%d/%d, #Data=%d}",
+		spl.SeqNr, spl.ChunkNumber+1, spl.ChunkCount, len(spl.Data))
 }
 
 func Parse(data []byte) (*Packet, error) {
@@ -131,6 +144,14 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 			if p.ControlType == SetPeerID {
 				p.PeerID = binary.BigEndian.Uint16(data[12:])
 			}
+		case Split:
+			spl := &SplitPayload{}
+			spl.SeqNr = binary.BigEndian.Uint16(data[11:])
+			spl.ChunkCount = binary.BigEndian.Uint16(data[13:])
+			spl.ChunkNumber = binary.BigEndian.Uint16(data[15:])
+			spl.Data = data[17:]
+
+			p.SplitPayload = spl
 		default:
 			fmt.Printf("Unknown packet: %s\n", fmt.Sprint(data))
 			//TODO: split
@@ -146,8 +167,8 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 }
 
 func (p *Packet) String() string {
-	return fmt.Sprintf("Type: %s, PeerID: %d, Channel: %d, SeqNr: %d,"+
-		"Subtype: %s, ControlType: %s CommandID: %d, Command: %s",
+	return fmt.Sprintf("{Packet Type: %s, PeerID: %d, Channel: %d, SeqNr: %d,"+
+		"Subtype: %s, ControlType: %s CommandID: %d, Command: %s, SplitPayload: %s}",
 		p.PacketType, p.PeerID, p.Channel, p.SeqNr,
-		p.SubType, p.ControlType, p.CommandID, p.Command)
+		p.SubType, p.ControlType, p.CommandID, p.Command, p.SplitPayload)
 }

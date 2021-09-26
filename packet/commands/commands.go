@@ -16,6 +16,7 @@ const (
 	ServerCommandAccessDenied          uint16 = 10
 	ServerCommandTimeOfDay             uint16 = 41
 	ServerCommandChatMessage           uint16 = 47
+	ServerCommandItemDefinitions       uint16 = 61
 	ServerCommandDetachedInventory     uint16 = 67
 	ServerCommandDeleteParticleSpawner uint16 = 83
 	ServerCommandUpdatePlayerList      uint16 = 86

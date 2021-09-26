@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/binary"
 	"fmt"
 	"minetest_client/packet"
 	"net"
@@ -12,19 +13,21 @@ type ClientPacketListener interface {
 }
 
 type Client struct {
-	conn      net.Conn
-	Host      string
-	Port      int
-	SeqNr     uint16
-	listeners []ClientPacketListener
+	conn       net.Conn
+	Host       string
+	Port       int
+	SeqNr      uint16
+	listeners  []ClientPacketListener
+	splitparts []*packet.SplitPayload
 }
 
 func NewClient(host string, port int) *Client {
 	return &Client{
-		Host:      host,
-		Port:      port,
-		SeqNr:     65500,
-		listeners: make([]ClientPacketListener, 0),
+		Host:       host,
+		Port:       port,
+		SeqNr:      65500,
+		listeners:  make([]ClientPacketListener, 0),
+		splitparts: make([]*packet.SplitPayload, 0),
 	}
 }
 
@@ -66,6 +69,38 @@ func (c *Client) onReceive(p *packet.Packet) {
 	for _, listener := range c.listeners {
 		listener.OnPacketReceive(p)
 	}
+
+	if p.SubType == packet.Split {
+		//shove into list
+		c.splitparts = append(c.splitparts, p.SplitPayload)
+
+		if p.SplitPayload.ChunkCount == p.SplitPayload.ChunkNumber+1 {
+			//last packet
+			payload := []byte{}
+			for _, sp := range c.splitparts {
+				payload = append(payload, sp.Data...)
+			}
+			c.splitparts = make([]*packet.SplitPayload, 0)
+
+			commandId := binary.BigEndian.Uint16(payload[0:])
+			cmd, err := packet.CreateCommand(commandId, payload[2+4:])
+			if err != nil {
+				panic(err)
+			}
+
+			p.CommandID = commandId
+			p.Command = cmd
+			p.Payload = payload
+			p.SubType = packet.Original
+			p.SplitPayload = nil
+
+			fmt.Printf("Received and assembled packet: %s\n", p)
+			for _, listener := range c.listeners {
+				listener.OnPacketReceive(p)
+			}
+		}
+	}
+
 }
 
 func (c *Client) rxLoop() {

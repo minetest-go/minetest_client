@@ -41,6 +41,11 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 			panic(err)
 		}
 
+		if p.SubType == packet.Split {
+			// don't process split packets
+			return
+		}
+
 		if p.CommandID == commands.ServerCommandHello {
 			hello_cmd, ok := p.Command.(*commands.ServerHello)
 			if !ok {

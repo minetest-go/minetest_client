@@ -25,6 +25,8 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 		cmd = &commands.ServerUpdatePlayerList{}
 	case commands.ServerCommandSRPBytesSB:
 		cmd = &commands.ServerSRPBytesSB{}
+	case commands.ServerCommandItemDefinitions:
+		cmd = &commands.ServerItemDefinitions{}
 	}
 
 	if cmd != nil {

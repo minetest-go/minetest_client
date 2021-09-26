@@ -56,7 +56,7 @@ func (c *Client) Send(packet *packet.Packet) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Sending packet: %s\n", packet)
+	//fmt.Printf("Sending packet: %s\n", packet)
 	//fmt.Printf("Sending raw: %s\n", fmt.Sprint(data))
 
 	_, err = c.conn.Write(data)
@@ -64,7 +64,7 @@ func (c *Client) Send(packet *packet.Packet) error {
 }
 
 func (c *Client) onReceive(p *packet.Packet) {
-	fmt.Printf("Received packet: %s\n", p)
+	//fmt.Printf("Received packet: %s\n", p)
 
 	for _, listener := range c.listeners {
 		listener.OnPacketReceive(p)
@@ -94,7 +94,7 @@ func (c *Client) onReceive(p *packet.Packet) {
 			p.SubType = packet.Original
 			p.SplitPayload = nil
 
-			fmt.Printf("Received and assembled packet: %s\n", p)
+			//fmt.Printf("Received and assembled packet: %s\n", p)
 			for _, listener := range c.listeners {
 				listener.OnPacketReceive(p)
 			}

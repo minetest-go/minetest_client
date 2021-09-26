@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"minetest_client/packet"
 	"minetest_client/packet/commands"
 	"minetest_client/srp"
@@ -28,6 +29,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 			go func() {
 				// deferred init
 				time.Sleep(2 * time.Second)
+				fmt.Println("Sending INIT")
 				err := ch.client.Send(packet.CreateOriginal(ch.peerID, 0, commands.NewClientInit(ch.Username)))
 				if err != nil {
 					panic(err)
@@ -60,6 +62,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 					panic(err)
 				}
 
+				fmt.Println("Sending SRP bytes A")
 				err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesA(ch.SRPPubA)))
 				if err != nil {
 					panic(err)
@@ -73,6 +76,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 					panic(err)
 				}
 
+				fmt.Println("Sending first SRP")
 				err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientFirstSRP(salt, verifier)))
 				if err != nil {
 					panic(err)
@@ -96,6 +100,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 
 			proof := srp.ClientProof(identifier, sb_cmd.BytesS, ch.SRPPubA, sb_cmd.BytesB, clientK)
 
+			fmt.Println("Sending SRP bytes M")
 			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesM(proof)))
 			if err != nil {
 				panic(err)
@@ -103,6 +108,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 		}
 
 		if p.CommandID == commands.ServerCommandAuthAccept {
+			fmt.Println("Sending INIT2")
 			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientInit2()))
 			if err != nil {
 				panic(err)

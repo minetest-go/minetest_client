@@ -1,6 +1,9 @@
 package packet
 
-import "minetest_client/packet/commands"
+import (
+	"fmt"
+	"minetest_client/packet/commands"
+)
 
 func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 	var cmd Command = nil
@@ -27,6 +30,10 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 		cmd = &commands.ServerSRPBytesSB{}
 	case commands.ServerCommandItemDefinitions:
 		cmd = &commands.ServerItemDefinitions{}
+	case commands.ServerCommandNodeDefinitions:
+		cmd = &commands.ServerNodeDefinitions{}
+	default:
+		fmt.Printf("Unknown command received: %d\n", commandId)
 	}
 
 	if cmd != nil {

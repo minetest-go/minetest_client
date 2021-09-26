@@ -153,7 +153,7 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 
 			p.SplitPayload = spl
 		default:
-			fmt.Printf("Unknown packet: %s\n", fmt.Sprint(data))
+			//fmt.Printf("Unknown packet: %s\n", fmt.Sprint(data))
 			//TODO: split
 			p.CommandID = binary.BigEndian.Uint16(data[11:])
 			p.Payload = data[13:]

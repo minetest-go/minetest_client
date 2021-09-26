@@ -16,6 +16,10 @@ type ClientHandler struct {
 	SRPPrivA []byte
 }
 
+func (ch *ClientHandler) Init() error {
+	return ch.client.Send(packet.CreateReliable(0, 65500, commands.NewClientPeerInit()))
+}
+
 func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 	if p.PacketType == packet.Reliable {
 		if p.ControlType == packet.SetPeerID {

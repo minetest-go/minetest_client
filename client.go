@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"minetest_client/packet"
-	"minetest_client/packet/commands"
 	"net"
 )
 
@@ -37,7 +36,7 @@ func (c *Client) Start() error {
 	c.conn = conn
 	go c.rxLoop()
 
-	return c.Send(packet.CreateReliable(0, 65500, commands.NewClientPeerInit()))
+	return nil
 }
 
 func (c *Client) AddListener(listener ClientPacketListener) {

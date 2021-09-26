@@ -20,6 +20,12 @@ func main() {
 		panic(err)
 	}
 
+	time.Sleep(1 * time.Second)
+	err = ch.Init()
+	if err != nil {
+		panic(err)
+	}
+
 	time.Sleep(10 * time.Second)
 
 	err = client.Send(packet.CreateControl(ch.peerID, 0, packet.Disco))

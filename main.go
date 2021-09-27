@@ -27,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(60 * time.Second)
+	time.Sleep(300 * time.Second)
 
 	fmt.Println("Sending disconnect")
 	err = client.Send(packet.CreateControl(ch.peerID, packet.Disco))

@@ -13,19 +13,20 @@ type ClientPacketListener interface {
 }
 
 type Client struct {
-	conn       net.Conn
-	Host       string
-	Port       int
-	listeners  []ClientPacketListener
-	splitparts []*packet.SplitPayload
+	conn            net.Conn
+	Host            string
+	Port            int
+	listeners       []ClientPacketListener
+	splitpart_map   map[uint16]*packet.SplitPayload
+	splitpart_count uint16
 }
 
 func NewClient(host string, port int) *Client {
 	return &Client{
-		Host:       host,
-		Port:       port,
-		listeners:  make([]ClientPacketListener, 0),
-		splitparts: make([]*packet.SplitPayload, 0),
+		Host:          host,
+		Port:          port,
+		listeners:     make([]ClientPacketListener, 0),
+		splitpart_map: make(map[uint16]*packet.SplitPayload),
 	}
 }
 
@@ -65,15 +66,25 @@ func (c *Client) onReceive(p *packet.Packet) {
 
 	if p.SubType == packet.Split {
 		//shove into list
-		c.splitparts = append(c.splitparts, p.SplitPayload)
+		if c.splitpart_map[p.SplitPayload.ChunkNumber] == nil {
+			c.splitpart_map[p.SplitPayload.ChunkNumber] = p.SplitPayload
+			c.splitpart_count++
+		}
 
-		if p.SplitPayload.ChunkCount == p.SplitPayload.ChunkNumber+1 {
+		if p.SplitPayload.ChunkCount == uint16(c.splitpart_count) {
 			//last packet
 			payload := []byte{}
-			for _, sp := range c.splitparts {
-				payload = append(payload, sp.Data...)
+			for i := uint16(0); i < c.splitpart_count; i++ {
+				if c.splitpart_map[i] == nil {
+					panic(fmt.Sprintf("encountered nil splitpacket at i=%d, parts=%d, chunks=%d",
+						i, c.splitpart_count, p.SplitPayload.ChunkCount))
+				}
+				payload = append(payload, c.splitpart_map[i].Data...)
 			}
-			c.splitparts = make([]*packet.SplitPayload, 0)
+
+			//reset split vars
+			c.splitpart_map = make(map[uint16]*packet.SplitPayload)
+			c.splitpart_count = 0
 
 			commandId := binary.BigEndian.Uint16(payload[0:])
 			cmd, err := packet.CreateCommand(commandId, payload[2+4:])

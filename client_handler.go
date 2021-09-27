@@ -140,6 +140,10 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 
 		}
 
+		if p.CommandID == commands.ServerCommandAccessDenied {
+			fmt.Println("Server sends ACCESS_DENIED")
+		}
+
 		if p.CommandID == commands.ServerCommandItemDefinitions {
 			fmt.Println("Server sends item definitions")
 		}

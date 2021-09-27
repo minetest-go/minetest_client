@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"minetest_client/packet"
 	"time"
 )
@@ -28,7 +29,8 @@ func main() {
 
 	time.Sleep(10 * time.Second)
 
-	err = client.Send(packet.CreateControl(ch.peerID, 0, packet.Disco))
+	fmt.Println("Sending disconnect")
+	err = client.Send(packet.CreateControl(ch.peerID, packet.Disco))
 	if err != nil {
 		panic(err)
 	}

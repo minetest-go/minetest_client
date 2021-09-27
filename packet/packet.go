@@ -37,7 +37,14 @@ func Parse(data []byte) (*Packet, error) {
 	return p, err
 }
 
-func CreateReliable(peerId uint16, seqNr uint16, command Command) *Packet {
+var seqNr uint16 = 65500
+
+func ResetSeqNr(value uint16) {
+	seqNr = value - 1
+}
+
+func CreateReliable(peerId uint16, command Command) *Packet {
+	seqNr++
 	return &Packet{
 		PacketType: Reliable,
 		SubType:    Original,
@@ -48,17 +55,26 @@ func CreateReliable(peerId uint16, seqNr uint16, command Command) *Packet {
 	}
 }
 
-func CreateOriginal(peerId uint16, seqNr uint16, command Command) *Packet {
+func CreateOriginal(peerId uint16, command Command) *Packet {
 	return &Packet{
 		PacketType: Original,
 		Command:    command,
 		PeerID:     peerId,
-		SeqNr:      seqNr,
 		Channel:    1,
 	}
 }
 
-func CreateControl(peerId uint16, seqNr uint16, controlType ControlType) *Packet {
+func CreateControlAck(peerId uint16, packet *Packet) *Packet {
+	return &Packet{
+		PacketType:  Control,
+		ControlType: Ack,
+		PeerID:      peerId,
+		SeqNr:       packet.SeqNr,
+	}
+}
+
+func CreateControl(peerId uint16, controlType ControlType) *Packet {
+	seqNr++
 	return &Packet{
 		PacketType:  Control,
 		ControlType: controlType,
@@ -67,7 +83,8 @@ func CreateControl(peerId uint16, seqNr uint16, controlType ControlType) *Packet
 	}
 }
 
-func CreatePacket(packetType PacketType, subType PacketType, peerId uint16, seqNr uint16, command Command) *Packet {
+func CreatePacket(packetType PacketType, subType PacketType, peerId uint16, command Command) *Packet {
+	seqNr++
 	return &Packet{
 		PacketType: packetType,
 		SubType:    subType,
@@ -134,7 +151,8 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 	p.PacketType = PacketType(data[7])
 
 	if p.PacketType == Reliable {
-		p.SeqNr = binary.BigEndian.Uint16(data[8:])
+		seqNr := binary.BigEndian.Uint16(data[8:])
+		p.SeqNr = seqNr
 		p.SubType = PacketType(data[10])
 
 		switch p.SubType {

@@ -18,7 +18,7 @@ type ClientHandler struct {
 }
 
 func (ch *ClientHandler) Init() error {
-	return ch.client.Send(packet.CreateReliable(0, 65500, commands.NewClientPeerInit()))
+	return ch.client.Send(packet.CreateReliable(0, commands.NewClientPeerInit()))
 }
 
 func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
@@ -30,7 +30,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 				// deferred init
 				time.Sleep(2 * time.Second)
 				fmt.Println("Sending INIT")
-				err := ch.client.Send(packet.CreateOriginal(ch.peerID, 0, commands.NewClientInit(ch.Username)))
+				err := ch.client.Send(packet.CreateOriginal(ch.peerID, commands.NewClientInit(ch.Username)))
 				if err != nil {
 					panic(err)
 				}
@@ -38,7 +38,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 		}
 
 		// send ack
-		err := ch.client.Send(packet.CreateControl(ch.peerID, p.SeqNr, packet.Ack))
+		err := ch.client.Send(packet.CreateControlAck(ch.peerID, p))
 		if err != nil {
 			panic(err)
 		}
@@ -49,6 +49,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 		}
 
 		if p.CommandID == commands.ServerCommandHello {
+			packet.ResetSeqNr(65500)
 			hello_cmd, ok := p.Command.(*commands.ServerHello)
 			if !ok {
 				panic("invalid type")
@@ -63,7 +64,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 				}
 
 				fmt.Println("Sending SRP bytes A")
-				err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesA(ch.SRPPubA)))
+				err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientSRPBytesA(ch.SRPPubA)))
 				if err != nil {
 					panic(err)
 				}
@@ -77,7 +78,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 				}
 
 				fmt.Println("Sending first SRP")
-				err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientFirstSRP(salt, verifier)))
+				err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientFirstSRP(salt, verifier)))
 				if err != nil {
 					panic(err)
 				}
@@ -101,7 +102,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 			proof := srp.ClientProof(identifier, sb_cmd.BytesS, ch.SRPPubA, sb_cmd.BytesB, clientK)
 
 			fmt.Println("Sending SRP bytes M")
-			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientSRPBytesM(proof)))
+			err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientSRPBytesM(proof)))
 			if err != nil {
 				panic(err)
 			}
@@ -109,11 +110,40 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 
 		if p.CommandID == commands.ServerCommandAuthAccept {
 			fmt.Println("Sending INIT2")
-			err = ch.client.Send(packet.CreateReliable(ch.peerID, 0, commands.NewClientInit2()))
+			err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientInit2()))
 			if err != nil {
 				panic(err)
 			}
 		}
 
+		if p.CommandID == commands.ServerCommandAnnounceMedia {
+			fmt.Println("Server announces media")
+		}
+
+		if p.CommandID == commands.ServerCommandCSMRestrictionFlags {
+			fmt.Println("Server sends csm restriction flags")
+
+			fmt.Println("Sending CLIENT_READY")
+			err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientReady(5, 5, 5, "mt-bot", 4)))
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println("Sending PLAYERPOS")
+			ppos := commands.NewClientPlayerPos()
+			err = ch.client.Send(packet.CreateReliable(ch.peerID, ppos))
+			if err != nil {
+				panic(err)
+			}
+
+		}
+
+		if p.CommandID == commands.ServerCommandItemDefinitions {
+			fmt.Println("Server sends item definitions")
+		}
+
+		if p.CommandID == commands.ServerCommandNodeDefinitions {
+			fmt.Println("Server sends node definitions")
+		}
 	}
 }

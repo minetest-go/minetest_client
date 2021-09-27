@@ -55,7 +55,7 @@ func TestParseSplit(t *testing.T) {
 func TestReliableSRPBytesA(t *testing.T) {
 	bytes_a := make([]byte, 256)
 
-	p := CreateReliable(2, 65500, commands.NewClientSRPBytesA(bytes_a))
+	p := CreateReliable(2, commands.NewClientSRPBytesA(bytes_a))
 	data, err := p.MarshalPacket()
 
 	assert.NoError(t, err)
@@ -81,10 +81,6 @@ func TestReliableSRPBytesA(t *testing.T) {
 	// packet type
 	assert.Equal(t, uint8(Reliable), data[7])
 
-	// sequence number
-	assert.Equal(t, uint8(255), data[8])
-	assert.Equal(t, uint8(220), data[9])
-
 	// subtype
 	assert.Equal(t, uint8(Original), data[10])
 
@@ -100,7 +96,7 @@ func TestReliableFirstSRP(t *testing.T) {
 	salt := make([]byte, 16)
 	verifier := make([]byte, 256)
 
-	p := CreateReliable(2, 65500, commands.NewClientFirstSRP(salt, verifier))
+	p := CreateReliable(2, commands.NewClientFirstSRP(salt, verifier))
 	data, err := p.MarshalPacket()
 
 	assert.NoError(t, err)
@@ -126,10 +122,6 @@ func TestReliableFirstSRP(t *testing.T) {
 	// packet type
 	assert.Equal(t, uint8(Reliable), data[7])
 
-	// sequence number
-	assert.Equal(t, uint8(255), data[8])
-	assert.Equal(t, uint8(220), data[9])
-
 	// subtype
 	assert.Equal(t, uint8(Original), data[10])
 
@@ -142,7 +134,8 @@ func TestReliableFirstSRP(t *testing.T) {
 }
 
 func TestReliablePeerInit(t *testing.T) {
-	p := CreateReliable(2, 65500, commands.NewClientPeerInit())
+	p := CreateReliable(2, commands.NewClientPeerInit())
+	p.SeqNr = 65500
 	data, err := p.MarshalPacket()
 
 	assert.NoError(t, err)

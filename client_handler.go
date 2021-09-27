@@ -18,7 +18,9 @@ type ClientHandler struct {
 }
 
 func (ch *ClientHandler) Init() error {
-	return ch.client.Send(packet.CreateReliable(0, commands.NewClientPeerInit()))
+	peerInit := packet.CreateReliable(0, commands.NewClientPeerInit())
+	peerInit.Channel = 0
+	return ch.client.Send(peerInit)
 }
 
 func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
@@ -144,6 +146,15 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 
 		if p.CommandID == commands.ServerCommandNodeDefinitions {
 			fmt.Println("Server sends node definitions")
+		}
+
+		if p.CommandID == commands.ServerCommandChatMessage {
+			chat_pkg, ok := p.Command.(*commands.ServerChatMessage)
+			if !ok {
+				panic("Invalid type")
+			}
+
+			fmt.Printf("Chat: '%s'\n", chat_pkg.Message)
 		}
 	}
 }

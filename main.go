@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-	//client := NewClient("pandorabox.io", 30000)
-	client := NewClient("127.0.0.1", 30000)
+	client := NewClient("pandorabox.io", 30000)
+	//client := NewClient("127.0.0.1", 30000)
 	ch := &ClientHandler{
-		Username: "test2",
-		Password: "enter",
+		Username: "totallynotabot",
+		Password: "Endor",
 		client:   client,
 	}
 	client.AddListener(ch)
@@ -27,7 +27,7 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(10 * time.Second)
+	time.Sleep(60 * time.Second)
 
 	fmt.Println("Sending disconnect")
 	err = client.Send(packet.CreateControl(ch.peerID, packet.Disco))

@@ -38,6 +38,16 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 		cmd = &commands.ServerMovement{}
 	case commands.ServerCommandCSMRestrictionFlags:
 		cmd = &commands.ServerCSMRestrictionFlags{}
+	case commands.ServerCommandBlockData:
+		cmd = &commands.ServerBlockData{}
+	case commands.ServerCommandHudAdd:
+		cmd = &commands.ServerHudAdd{}
+	case commands.ServerCommandHudSetParam:
+		cmd = &commands.ServerHudSetParam{}
+	case commands.ServerCommandHudSetFlags:
+		cmd = &commands.ServerHudSetFlags{}
+	case commands.ServerCommandHudChange:
+		cmd = &commands.ServerHudChange{}
 	default:
 		fmt.Printf("Unknown command received: %d\n", commandId)
 	}

@@ -37,7 +37,7 @@ func Parse(data []byte) (*Packet, error) {
 	return p, err
 }
 
-var seqNr uint16 = 65500
+var seqNr uint16 = 65500 - 1
 
 func ResetSeqNr(value uint16) {
 	seqNr = value - 1
@@ -70,6 +70,7 @@ func CreateControlAck(peerId uint16, packet *Packet) *Packet {
 		ControlType: Ack,
 		PeerID:      peerId,
 		SeqNr:       packet.SeqNr,
+		Channel:     0,
 	}
 }
 

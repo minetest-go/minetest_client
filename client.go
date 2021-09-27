@@ -16,7 +16,6 @@ type Client struct {
 	conn       net.Conn
 	Host       string
 	Port       int
-	SeqNr      uint16
 	listeners  []ClientPacketListener
 	splitparts []*packet.SplitPayload
 }
@@ -25,7 +24,6 @@ func NewClient(host string, port int) *Client {
 	return &Client{
 		Host:       host,
 		Port:       port,
-		SeqNr:      65500,
 		listeners:  make([]ClientPacketListener, 0),
 		splitparts: make([]*packet.SplitPayload, 0),
 	}
@@ -51,7 +49,7 @@ func (c *Client) Send(packet *packet.Packet) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Sending packet: %s\n", packet)
+	//fmt.Printf("Sending packet: %s\n", packet)
 	//fmt.Printf("Sending raw: %s\n", fmt.Sprint(data))
 
 	_, err = c.conn.Write(data)
@@ -59,7 +57,7 @@ func (c *Client) Send(packet *packet.Packet) error {
 }
 
 func (c *Client) onReceive(p *packet.Packet) {
-	fmt.Printf("Received packet: %s\n", p)
+	//fmt.Printf("Received packet: %s\n", p)
 
 	for _, listener := range c.listeners {
 		listener.OnPacketReceive(p)

@@ -26,7 +26,7 @@ func (p *ServerUpdatePlayerList) MarshalPacket() ([]byte, error) {
 }
 
 func (p *ServerUpdatePlayerList) UnmarshalPacket(payload []byte) error {
-	fmt.Printf("ServerUpdatePlayerList: len=%d %s\n", len(payload), fmt.Sprint(payload))
+	//fmt.Printf("ServerUpdatePlayerList: len=%d %s\n", len(payload), fmt.Sprint(payload))
 	// TODO
 	return nil
 }

@@ -17,7 +17,6 @@ func (p *ServerChatMessage) MarshalPacket() ([]byte, error) {
 }
 
 func (p *ServerChatMessage) UnmarshalPacket(payload []byte) error {
-	//fmt.Printf("Chat message: len=%d %s\n", len(payload), fmt.Sprint(payload))
 	size := payload[5]
 	p.Message = string(payload[6 : (size*2)+6])
 	return nil

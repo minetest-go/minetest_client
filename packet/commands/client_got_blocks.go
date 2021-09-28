@@ -3,34 +3,25 @@ package commands
 import (
 	"encoding/binary"
 	"fmt"
+	"minetest_client/types"
 )
 
-type BlockPos struct {
-	PosX int16
-	PosY int16
-	PosZ int16
-}
-
-func (bp BlockPos) String() string {
-	return fmt.Sprintf("{Blockpos %d/%d/%d}", bp.PosX, bp.PosY, bp.PosZ)
-}
-
 type ClientGotBlocks struct {
-	Blocks []BlockPos
+	Blocks []types.BlockPos
 }
 
 func NewClientGotBlocks() *ClientGotBlocks {
 	return &ClientGotBlocks{
-		Blocks: make([]BlockPos, 0),
+		Blocks: make([]types.BlockPos, 0),
 	}
 }
 
-func (p *ClientGotBlocks) AddBlock(pos BlockPos) {
+func (p *ClientGotBlocks) AddBlock(pos types.BlockPos) {
 	p.Blocks = append(p.Blocks, pos)
 }
 
 func (p *ClientGotBlocks) AddBlockPos(x, y, z int16) {
-	p.AddBlock(BlockPos{
+	p.AddBlock(types.BlockPos{
 		PosX: x,
 		PosY: y,
 		PosZ: z,

@@ -3,12 +3,11 @@ package commands
 import (
 	"encoding/binary"
 	"fmt"
+	"minetest_client/types"
 )
 
 type ServerBlockData struct {
-	PosX int16
-	PosY int16
-	PosZ int16
+	Pos types.BlockPos
 }
 
 func (p *ServerBlockData) GetCommandId() uint16 {
@@ -20,13 +19,14 @@ func (p *ServerBlockData) MarshalPacket() ([]byte, error) {
 }
 
 func (p *ServerBlockData) UnmarshalPacket(payload []byte) error {
-	p.PosX = int16(binary.BigEndian.Uint16(payload[0:]))
-	p.PosY = int16(binary.BigEndian.Uint16(payload[2:]))
-	p.PosZ = int16(binary.BigEndian.Uint16(payload[4:]))
+	blockpos := types.BlockPos{}
+	blockpos.PosX = int16(binary.BigEndian.Uint16(payload[0:]))
+	blockpos.PosY = int16(binary.BigEndian.Uint16(payload[2:]))
+	blockpos.PosZ = int16(binary.BigEndian.Uint16(payload[4:]))
+	p.Pos = blockpos
 	return nil
 }
 
 func (p *ServerBlockData) String() string {
-	return fmt.Sprintf("{ServerBlockData pos=%d/%d/%d}",
-		p.PosX, p.PosY, p.PosZ)
+	return fmt.Sprintf("{ServerBlockData pos=%s}", p.Pos)
 }

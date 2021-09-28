@@ -5,18 +5,25 @@ import (
 	"encoding/binary"
 	"fmt"
 	"minetest_client/packet"
+	"minetest_client/packet/commands"
 	"net"
 )
 
 type ClientPacketListener interface {
-	OnPacketReceive(p *packet.Packet)
+	OnPacketReceive(c *Client, p *packet.Packet)
+}
+
+type ClientCommandListener interface {
+	OnCommandReceive(c *Client, cmd packet.Command)
 }
 
 type Client struct {
 	conn            net.Conn
 	Host            string
 	Port            int
+	PeerID          uint16
 	listeners       []ClientPacketListener
+	cmd_listeners   []ClientCommandListener
 	splitpart_map   map[uint16]*packet.SplitPayload
 	splitpart_count uint16
 }
@@ -26,6 +33,7 @@ func NewClient(host string, port int) *Client {
 		Host:          host,
 		Port:          port,
 		listeners:     make([]ClientPacketListener, 0),
+		cmd_listeners: make([]ClientCommandListener, 0),
 		splitpart_map: make(map[uint16]*packet.SplitPayload),
 	}
 }
@@ -45,6 +53,10 @@ func (c *Client) AddListener(listener ClientPacketListener) {
 	c.listeners = append(c.listeners, listener)
 }
 
+func (c *Client) AddCommandListener(l ClientCommandListener) {
+	c.cmd_listeners = append(c.cmd_listeners, l)
+}
+
 func (c *Client) Send(packet *packet.Packet) error {
 	data, err := packet.MarshalPacket()
 	if err != nil {
@@ -60,8 +72,27 @@ func (c *Client) Send(packet *packet.Packet) error {
 func (c *Client) onReceive(p *packet.Packet) {
 	//fmt.Printf("Received packet: %s\n", p)
 
+	if p.PacketType == packet.Reliable || p.PacketType == packet.Original {
+		if p.ControlType == packet.SetPeerID {
+			c.PeerID = p.PeerID
+			cmd := &commands.ServerSetPeer{
+				PeerID: p.PeerID,
+			}
+
+			for _, cmd_listener := range c.cmd_listeners {
+				cmd_listener.OnCommandReceive(c, cmd)
+			}
+		}
+	}
+
 	for _, listener := range c.listeners {
-		listener.OnPacketReceive(p)
+		listener.OnPacketReceive(c, p)
+	}
+
+	if p.Command != nil && (p.SubType == packet.Reliable || p.SubType == packet.Original) {
+		for _, cmd_listener := range c.cmd_listeners {
+			cmd_listener.OnCommandReceive(c, p.Command)
+		}
 	}
 
 	if p.SubType == packet.Split {
@@ -92,15 +123,12 @@ func (c *Client) onReceive(p *packet.Packet) {
 				panic(err)
 			}
 
-			p.CommandID = commandId
-			p.Command = cmd
-			p.Payload = payload
-			p.SubType = packet.Original
-			p.SplitPayload = nil
+			//fmt.Printf("Received and assembled command: %s\n", cmd)
 
-			//fmt.Printf("Received and assembled packet: %s\n", p)
-			for _, listener := range c.listeners {
-				listener.OnPacketReceive(p)
+			if cmd != nil {
+				for _, cmd_listener := range c.cmd_listeners {
+					cmd_listener.OnCommandReceive(c, cmd)
+				}
 			}
 		}
 	}

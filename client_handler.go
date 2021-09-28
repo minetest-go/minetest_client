@@ -11,174 +11,133 @@ import (
 type ClientHandler struct {
 	Username string
 	Password string
-	peerID   uint16
-	client   *Client
 	SRPPubA  []byte
 	SRPPrivA []byte
 }
 
-func (ch *ClientHandler) Init() error {
+func (ch *ClientHandler) Init(c *Client) error {
 	peerInit := packet.CreateReliable(0, commands.NewClientPeerInit())
 	peerInit.Channel = 0
-	return ch.client.Send(peerInit)
+	return c.Send(peerInit)
 }
 
-func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
-	if p.PacketType == packet.Reliable || p.PacketType == packet.Original {
-		if p.ControlType == packet.SetPeerID {
-			ch.peerID = p.PeerID
-
-			go func() {
-				// deferred init
-				time.Sleep(2 * time.Second)
-				fmt.Println("Sending INIT")
-				err := ch.client.Send(packet.CreateOriginal(ch.peerID, commands.NewClientInit(ch.Username)))
-				if err != nil {
-					panic(err)
-				}
-			}()
+func (ch *ClientHandler) OnCommandReceive(c *Client, cmd packet.Command) {
+	switch cmd.GetCommandId() {
+	case commands.ServerCommandSetPeer:
+		go func() {
+			time.Sleep(1 * time.Second)
+			err := c.Send(packet.CreateOriginal(c.PeerID, commands.NewClientInit(ch.Username)))
+			if err != nil {
+				panic(err)
+			}
+		}()
+	case commands.ServerCommandHello:
+		packet.ResetSeqNr(65500)
+		hello_cmd, ok := cmd.(*commands.ServerHello)
+		if !ok {
+			panic("invalid type")
 		}
 
-		// send ack
-		if p.PacketType == packet.Reliable {
-			err := ch.client.Send(packet.CreateControlAck(ch.peerID, p))
+		if hello_cmd.AuthMechanismSRP {
+			// existing client
+			var err error
+			ch.SRPPubA, ch.SRPPrivA, err = srp.InitiateHandshake()
+			if err != nil {
+				panic(err)
+			}
+
+			fmt.Println("Sending SRP bytes A")
+			err = c.Send(packet.CreateReliable(c.PeerID, commands.NewClientSRPBytesA(ch.SRPPubA)))
 			if err != nil {
 				panic(err)
 			}
 		}
 
-		if p.SubType == packet.Split {
-			// don't process split packets
-			return
-		}
-
-		if p.CommandID == commands.ServerCommandHello {
-			packet.ResetSeqNr(65500)
-			hello_cmd, ok := p.Command.(*commands.ServerHello)
-			if !ok {
-				panic("invalid type")
-			}
-
-			if hello_cmd.AuthMechanismSRP {
-				// existing client
-				var err error
-				ch.SRPPubA, ch.SRPPrivA, err = srp.InitiateHandshake()
-				if err != nil {
-					panic(err)
-				}
-
-				fmt.Println("Sending SRP bytes A")
-				err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientSRPBytesA(ch.SRPPubA)))
-				if err != nil {
-					panic(err)
-				}
-			}
-
-			if hello_cmd.AuthMechanismFirstSRP {
-				// new client
-				salt, verifier, err := srp.NewClient([]byte(ch.Username), []byte(ch.Password))
-				if err != nil {
-					panic(err)
-				}
-
-				fmt.Println("Sending first SRP")
-				err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientFirstSRP(salt, verifier)))
-				if err != nil {
-					panic(err)
-				}
-			}
-		}
-
-		if p.CommandID == commands.ServerCommandSRPBytesSB {
-			sb_cmd, ok := p.Command.(*commands.ServerSRPBytesSB)
-			if !ok {
-				panic("invalid type")
-			}
-
-			identifier := []byte(ch.Username)
-			passphrase := []byte(ch.Password)
-
-			clientK, err := srp.CompleteHandshake(ch.SRPPubA, ch.SRPPrivA, identifier, passphrase, sb_cmd.BytesS, sb_cmd.BytesB)
+		if hello_cmd.AuthMechanismFirstSRP {
+			// new client
+			salt, verifier, err := srp.NewClient([]byte(ch.Username), []byte(ch.Password))
 			if err != nil {
 				panic(err)
 			}
 
-			proof := srp.ClientProof(identifier, sb_cmd.BytesS, ch.SRPPubA, sb_cmd.BytesB, clientK)
-
-			fmt.Println("Sending SRP bytes M")
-			err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientSRPBytesM(proof)))
+			fmt.Println("Sending first SRP")
+			err = c.Send(packet.CreateReliable(c.PeerID, commands.NewClientFirstSRP(salt, verifier)))
 			if err != nil {
 				panic(err)
 			}
 		}
-
-		if p.CommandID == commands.ServerCommandAuthAccept {
-			fmt.Println("Sending INIT2")
-			err := ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientInit2()))
-			if err != nil {
-				panic(err)
-			}
+	case commands.ServerCommandSRPBytesSB:
+		sb_cmd, ok := cmd.(*commands.ServerSRPBytesSB)
+		if !ok {
+			panic("invalid type")
 		}
 
-		if p.CommandID == commands.ServerCommandAnnounceMedia {
-			fmt.Println("Server announces media")
+		identifier := []byte(ch.Username)
+		passphrase := []byte(ch.Password)
+
+		clientK, err := srp.CompleteHandshake(ch.SRPPubA, ch.SRPPrivA, identifier, passphrase, sb_cmd.BytesS, sb_cmd.BytesB)
+		if err != nil {
+			panic(err)
 		}
 
-		if p.CommandID == commands.ServerCommandCSMRestrictionFlags {
-			fmt.Println("Server sends csm restriction flags")
+		proof := srp.ClientProof(identifier, sb_cmd.BytesS, ch.SRPPubA, sb_cmd.BytesB, clientK)
 
-			fmt.Println("Sending CLIENT_READY")
-			err := ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientReady(5, 5, 5, "mt-bot", 4)))
-			if err != nil {
-				panic(err)
-			}
+		fmt.Println("Sending SRP bytes M")
+		err = c.Send(packet.CreateReliable(c.PeerID, commands.NewClientSRPBytesM(proof)))
+		if err != nil {
+			panic(err)
+		}
+	case commands.ServerCommandAuthAccept:
+		fmt.Println("Sending INIT2")
+		err := c.Send(packet.CreateReliable(c.PeerID, commands.NewClientInit2()))
+		if err != nil {
+			panic(err)
+		}
+	case commands.ServerCommandAnnounceMedia:
+		fmt.Println("Server announces media")
+	case commands.ServerCommandCSMRestrictionFlags:
+		fmt.Println("Server sends csm restriction flags")
 
-			fmt.Println("Sending PLAYERPOS")
-			ppos := commands.NewClientPlayerPos()
-			err = ch.client.Send(packet.CreateReliable(ch.peerID, ppos))
-			if err != nil {
-				panic(err)
-			}
-
+		fmt.Println("Sending CLIENT_READY")
+		err := c.Send(packet.CreateReliable(c.PeerID, commands.NewClientReady(5, 5, 5, "mt-bot", 4)))
+		if err != nil {
+			panic(err)
 		}
 
-		if p.CommandID == commands.ServerCommandAccessDenied {
-			fmt.Println("Server sends ACCESS_DENIED")
+		fmt.Println("Sending PLAYERPOS")
+		ppos := commands.NewClientPlayerPos()
+		err = c.Send(packet.CreateReliable(c.PeerID, ppos))
+		if err != nil {
+			panic(err)
+		}
+	case commands.ServerCommandAccessDenied:
+		fmt.Println("Server sends ACCESS_DENIED")
+	case commands.ServerCommandItemDefinitions:
+		fmt.Println("Server sends item definitions")
+	case commands.ServerCommandNodeDefinitions:
+		fmt.Println("Server sends node definitions")
+	case commands.ServerCommandBlockData:
+		block_pkg, ok := cmd.(*commands.ServerBlockData)
+		if !ok {
+			panic("Invalid type")
 		}
 
-		if p.CommandID == commands.ServerCommandItemDefinitions {
-			fmt.Println("Server sends item definitions")
+		fmt.Printf("Block: '%s'\n", block_pkg)
+	/*
+		gotblocks := commands.NewClientGotBlocks()
+		gotblocks.AddBlockPos(block_pkg.PosX, block_pkg.PosY, block_pkg.PosZ)
+
+		err := ch.client.Send(packet.CreateReliable(ch.peerID, gotblocks))
+		if err != nil {
+			panic(err)
+		}
+	*/
+	case commands.ServerCommandChatMessage:
+		chat_pkg, ok := cmd.(*commands.ServerChatMessage)
+		if !ok {
+			panic("Invalid type")
 		}
 
-		if p.CommandID == commands.ServerCommandNodeDefinitions {
-			fmt.Println("Server sends node definitions")
-		}
-
-		if p.CommandID == commands.ServerCommandBlockData {
-			block_pkg, ok := p.Command.(*commands.ServerBlockData)
-			if !ok {
-				panic("Invalid type")
-			}
-
-			fmt.Printf("Block: '%s'\n", block_pkg)
-			/*
-				gotblocks := commands.NewClientGotBlocks()
-				gotblocks.AddBlockPos(block_pkg.PosX, block_pkg.PosY, block_pkg.PosZ)
-
-				err := ch.client.Send(packet.CreateReliable(ch.peerID, gotblocks))
-				if err != nil {
-					panic(err)
-				}
-			*/
-		}
-
-		if p.CommandID == commands.ServerCommandChatMessage {
-			chat_pkg, ok := p.Command.(*commands.ServerChatMessage)
-			if !ok {
-				panic("Invalid type")
-			}
-
-			fmt.Printf("Chat: '%s'\n", chat_pkg.Message)
-		}
+		fmt.Printf("Chat: '%s'\n", chat_pkg.Message)
 	}
 }

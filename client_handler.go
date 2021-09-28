@@ -24,7 +24,7 @@ func (ch *ClientHandler) Init() error {
 }
 
 func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
-	if p.PacketType == packet.Reliable {
+	if p.PacketType == packet.Reliable || p.PacketType == packet.Original {
 		if p.ControlType == packet.SetPeerID {
 			ch.peerID = p.PeerID
 
@@ -40,9 +40,11 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 		}
 
 		// send ack
-		err := ch.client.Send(packet.CreateControlAck(ch.peerID, p))
-		if err != nil {
-			panic(err)
+		if p.PacketType == packet.Reliable {
+			err := ch.client.Send(packet.CreateControlAck(ch.peerID, p))
+			if err != nil {
+				panic(err)
+			}
 		}
 
 		if p.SubType == packet.Split {
@@ -112,7 +114,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 
 		if p.CommandID == commands.ServerCommandAuthAccept {
 			fmt.Println("Sending INIT2")
-			err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientInit2()))
+			err := ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientInit2()))
 			if err != nil {
 				panic(err)
 			}
@@ -126,7 +128,7 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 			fmt.Println("Server sends csm restriction flags")
 
 			fmt.Println("Sending CLIENT_READY")
-			err = ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientReady(5, 5, 5, "mt-bot", 4)))
+			err := ch.client.Send(packet.CreateReliable(ch.peerID, commands.NewClientReady(5, 5, 5, "mt-bot", 4)))
 			if err != nil {
 				panic(err)
 			}

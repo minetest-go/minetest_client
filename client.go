@@ -98,7 +98,7 @@ func (c *Client) onReceive(p *packet.Packet) {
 			p.SubType = packet.Original
 			p.SplitPayload = nil
 
-			fmt.Printf("Received and assembled packet: %s\n", p)
+			//fmt.Printf("Received and assembled packet: %s\n", p)
 			for _, listener := range c.listeners {
 				listener.OnPacketReceive(p)
 			}

@@ -1,14 +1,24 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"minetest_client/packet"
 	"time"
 )
 
 func main() {
-	client := NewClient("pandorabox.io", 30000)
-	//client := NewClient("127.0.0.1", 30000)
+	host := flag.String("host", "127.0.0.1", "The hostname")
+	port := flag.Int("port", 30000, "The portname")
+	help := flag.Bool("help", false, "Shows the help")
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		return
+	}
+
+	client := NewClient(*host, *port)
 	ch := &ClientHandler{
 		Username: "totallynotabot",
 		Password: "Endor",

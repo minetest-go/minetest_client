@@ -1,12 +1,19 @@
 package packet
 
 import (
+	"encoding/binary"
 	"fmt"
 	"minetest_client/packet/commands"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestInt16Read(t *testing.T) {
+	buf := []byte{0xff, 0xfe}
+	value := int16(binary.BigEndian.Uint16(buf))
+	assert.Equal(t, int16(-2), value)
+}
 
 func TestParseSplit(t *testing.T) {
 	raw_split_pkg := []byte("\x4f\x45\x74\x03\x00\x01" +

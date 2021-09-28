@@ -154,6 +154,24 @@ func (ch *ClientHandler) OnPacketReceive(p *packet.Packet) {
 			fmt.Println("Server sends node definitions")
 		}
 
+		if p.CommandID == commands.ServerCommandBlockData {
+			block_pkg, ok := p.Command.(*commands.ServerBlockData)
+			if !ok {
+				panic("Invalid type")
+			}
+
+			fmt.Printf("Block: '%s'\n", block_pkg)
+			/*
+				gotblocks := commands.NewClientGotBlocks()
+				gotblocks.AddBlockPos(block_pkg.PosX, block_pkg.PosY, block_pkg.PosZ)
+
+				err := ch.client.Send(packet.CreateReliable(ch.peerID, gotblocks))
+				if err != nil {
+					panic(err)
+				}
+			*/
+		}
+
 		if p.CommandID == commands.ServerCommandChatMessage {
 			chat_pkg, ok := p.Command.(*commands.ServerChatMessage)
 			if !ok {

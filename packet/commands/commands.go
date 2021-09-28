@@ -6,6 +6,7 @@ const (
 	ClientCommandInit      uint16 = 2
 	ClientCommandInit2     uint16 = 17
 	ClientCommandPlayerPos uint16 = 35
+	ClientCommandGotBlocks uint16 = 36
 	ClientCommandReady     uint16 = 67
 	ClientCommandFirstSRP  uint16 = 80
 	ClientCommandSRPBytesA uint16 = 81

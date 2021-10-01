@@ -13,20 +13,19 @@ type ClientPacketListener interface {
 }
 
 type Client struct {
-	conn            net.Conn
-	Host            string
-	Port            int
-	listeners       []ClientPacketListener
-	splitpart_map   map[uint16]*packet.SplitPayload
-	splitpart_count uint16
+	conn      net.Conn
+	Host      string
+	Port      int
+	listeners []ClientPacketListener
+	sph       *packet.SplitpacketHandler
 }
 
 func NewClient(host string, port int) *Client {
 	return &Client{
-		Host:          host,
-		Port:          port,
-		listeners:     make([]ClientPacketListener, 0),
-		splitpart_map: make(map[uint16]*packet.SplitPayload),
+		Host:      host,
+		Port:      port,
+		listeners: make([]ClientPacketListener, 0),
+		sph:       packet.NewSplitPacketHandler(),
 	}
 }
 
@@ -66,35 +65,18 @@ func (c *Client) onReceive(p *packet.Packet) {
 
 	if p.SubType == packet.Split {
 		//shove into list
-		if c.splitpart_map[p.SplitPayload.ChunkNumber] == nil {
-			c.splitpart_map[p.SplitPayload.ChunkNumber] = p.SplitPayload
-			c.splitpart_count++
-		}
+		data := c.sph.AddPacket(p.SplitPayload)
 
-		if p.SplitPayload.ChunkCount == uint16(c.splitpart_count) {
-			//last packet
-			payload := []byte{}
-			for i := uint16(0); i < c.splitpart_count; i++ {
-				if c.splitpart_map[i] == nil {
-					panic(fmt.Sprintf("encountered nil splitpacket at i=%d, parts=%d, chunks=%d",
-						i, c.splitpart_count, p.SplitPayload.ChunkCount))
-				}
-				payload = append(payload, c.splitpart_map[i].Data...)
-			}
-
-			//reset split vars
-			c.splitpart_map = make(map[uint16]*packet.SplitPayload)
-			c.splitpart_count = 0
-
-			commandId := binary.BigEndian.Uint16(payload[0:])
-			cmd, err := packet.CreateCommand(commandId, payload[2+4:])
+		if data != nil {
+			commandId := binary.BigEndian.Uint16(data[0:])
+			cmd, err := packet.CreateCommand(commandId, data[2+4:])
 			if err != nil {
 				panic(err)
 			}
 
 			p.CommandID = commandId
 			p.Command = cmd
-			p.Payload = payload
+			p.Payload = data
 			p.SubType = packet.Original
 			p.SplitPayload = nil
 

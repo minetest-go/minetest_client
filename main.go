@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"minetest_client/packet"
+	"os"
+	"os/signal"
 	"time"
 )
 
@@ -44,7 +46,9 @@ func main() {
 		panic(err)
 	}
 
-	time.Sleep(300 * time.Second)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
 
 	fmt.Println("Sending disconnect")
 	err = client.Send(packet.CreateControl(client.PeerID, packet.Disco))

@@ -7,11 +7,10 @@ import (
 )
 
 func main() {
-	client := NewClient("pandorabox.io", 30000)
-	//client := NewClient("127.0.0.1", 30000)
+	client := NewClient("127.0.0.1", 30000)
 	ch := &ClientHandler{
-		Username: "totallynotabot",
-		Password: "Endor",
+		Username: "test",
+		Password: "enter",
 		client:   client,
 	}
 	client.AddListener(ch)

@@ -43,14 +43,23 @@ func ResetSeqNr(value uint16) {
 	seqNr = value - 1
 }
 
+func NextSequenceNr() uint16 {
+	if seqNr >= 65535 {
+		seqNr = 0
+	} else {
+		seqNr++
+	}
+
+	return seqNr
+}
+
 func CreateReliable(peerId uint16, command Command) *Packet {
-	seqNr++
 	return &Packet{
 		PacketType: Reliable,
 		SubType:    Original,
 		Command:    command,
 		PeerID:     peerId,
-		SeqNr:      seqNr,
+		SeqNr:      NextSequenceNr(),
 		Channel:    1,
 	}
 }
@@ -75,23 +84,21 @@ func CreateControlAck(peerId uint16, packet *Packet) *Packet {
 }
 
 func CreateControl(peerId uint16, controlType ControlType) *Packet {
-	seqNr++
 	return &Packet{
 		PacketType:  Control,
 		ControlType: controlType,
 		PeerID:      peerId,
-		SeqNr:       seqNr,
+		SeqNr:       NextSequenceNr(),
 	}
 }
 
 func CreatePacket(packetType PacketType, subType PacketType, peerId uint16, command Command) *Packet {
-	seqNr++
 	return &Packet{
 		PacketType: packetType,
 		SubType:    subType,
 		Command:    command,
 		PeerID:     peerId,
-		SeqNr:      seqNr,
+		SeqNr:      NextSequenceNr(),
 	}
 }
 

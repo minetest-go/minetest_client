@@ -23,11 +23,13 @@ const (
 	ServerCommandTimeOfDay             uint16 = 41
 	ServerCommandCSMRestrictionFlags   uint16 = 42
 	ServerCommandChatMessage           uint16 = 47
+	ServerCommandActiveObjectMessage   uint16 = 50
 	ServerCommandNodeDefinitions       uint16 = 58
 	ServerCommandAnnounceMedia         uint16 = 60
 	ServerCommandItemDefinitions       uint16 = 61
 	ServerCommandDetachedInventory     uint16 = 67
 	ServerCommandMovement              uint16 = 69
+	ServerCommandAddParticleSpawner    uint16 = 71
 	ServerCommandHudAdd                uint16 = 73
 	ServerCommandHudChange             uint16 = 75
 	ServerCommandHudSetFlags           uint16 = 76

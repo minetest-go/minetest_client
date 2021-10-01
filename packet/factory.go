@@ -48,6 +48,10 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 		cmd = &commands.ServerHudSetFlags{}
 	case commands.ServerCommandHudChange:
 		cmd = &commands.ServerHudChange{}
+	case commands.ServerCommandActiveObjectMessage:
+		//TODO
+	case commands.ServerCommandAddParticleSpawner:
+		//TODO
 	default:
 		fmt.Printf("Unknown command received: %d\n", commandId)
 	}

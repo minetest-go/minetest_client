@@ -139,5 +139,7 @@ func (ch *ClientHandler) OnCommandReceive(c *Client, cmd packet.Command) {
 		}
 
 		fmt.Printf("Chat: '%s'\n", chat_pkg.Message)
+	case commands.ServerCommandActiveObjectMessage:
+	case commands.ServerCommandAddParticleSpawner:
 	}
 }

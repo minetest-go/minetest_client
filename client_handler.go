@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"minetest_client/commands"
 	"minetest_client/packet"
-	"minetest_client/packet/commands"
 	"minetest_client/srp"
 	"time"
 )

@@ -3,7 +3,7 @@ package packet
 import (
 	"encoding/binary"
 	"fmt"
-	"minetest_client/packet/commands"
+	"minetest_client/commands"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

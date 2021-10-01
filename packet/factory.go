@@ -2,7 +2,7 @@ package packet
 
 import (
 	"fmt"
-	"minetest_client/packet/commands"
+	"minetest_client/commands"
 )
 
 func CreateCommand(commandId uint16, payload []byte) (Command, error) {

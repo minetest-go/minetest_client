@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"encoding/binary"
 	"fmt"
+	"minetest_client/commands"
 	"minetest_client/packet"
-	"minetest_client/packet/commands"
 	"net"
 )
 

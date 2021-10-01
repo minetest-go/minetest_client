@@ -39,9 +39,9 @@ func (p *ClientGotBlocks) MarshalPacket() ([]byte, error) {
 	for _, bp := range p.Blocks {
 		binary.BigEndian.PutUint16(buf[offset:], uint16(bp.PosX))
 		offset += 2
-		binary.BigEndian.PutUint16(buf[offset:], uint16(bp.PosX))
+		binary.BigEndian.PutUint16(buf[offset:], uint16(bp.PosY))
 		offset += 2
-		binary.BigEndian.PutUint16(buf[offset:], uint16(bp.PosX))
+		binary.BigEndian.PutUint16(buf[offset:], uint16(bp.PosY))
 		offset += 2
 	}
 

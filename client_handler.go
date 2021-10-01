@@ -122,16 +122,16 @@ func (ch *ClientHandler) OnCommandReceive(c *Client, cmd packet.Command) {
 			panic("Invalid type")
 		}
 
-		fmt.Printf("Block: '%s'\n", block_pkg)
-	/*
-		gotblocks := commands.NewClientGotBlocks()
-		gotblocks.AddBlockPos(block_pkg.PosX, block_pkg.PosY, block_pkg.PosZ)
+		//fmt.Printf("Block: '%s'\n", block_pkg)
 
-		err := ch.client.Send(packet.CreateReliable(ch.peerID, gotblocks))
+		gotblocks := commands.NewClientGotBlocks()
+		gotblocks.AddBlock(block_pkg.Pos)
+
+		err := c.Send(packet.CreateReliable(c.PeerID, gotblocks))
 		if err != nil {
 			panic(err)
 		}
-	*/
+
 	case commands.ServerCommandChatMessage:
 		chat_pkg, ok := cmd.(*commands.ServerChatMessage)
 		if !ok {

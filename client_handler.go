@@ -9,10 +9,11 @@ import (
 )
 
 type ClientHandler struct {
-	Username string
-	Password string
-	SRPPubA  []byte
-	SRPPrivA []byte
+	Username  string
+	Password  string
+	StalkMode bool
+	SRPPubA   []byte
+	SRPPrivA  []byte
 }
 
 func (ch *ClientHandler) Init(c *Client) error {
@@ -32,6 +33,9 @@ func (ch *ClientHandler) OnCommandReceive(c *Client, cmd packet.Command) {
 			}
 		}()
 	case commands.ServerCommandHello:
+		if ch.StalkMode {
+			return
+		}
 		packet.ResetSeqNr(65500)
 		hello_cmd, ok := cmd.(*commands.ServerHello)
 		if !ok {
@@ -131,6 +135,14 @@ func (ch *ClientHandler) OnCommandReceive(c *Client, cmd packet.Command) {
 		if err != nil {
 			panic(err)
 		}
+
+	case commands.ServerCommandTimeOfDay:
+		tod_pkg, ok := cmd.(*commands.ServerTimeOfDay)
+		if !ok {
+			panic("Invalid type")
+		}
+
+		fmt.Printf("Time of day: %d\n", tod_pkg.TimeOfDay)
 
 	case commands.ServerCommandChatMessage:
 		chat_pkg, ok := cmd.(*commands.ServerChatMessage)

@@ -12,6 +12,7 @@ import (
 func main() {
 	var host, username, password string
 	var port int
+	var stalk bool
 	var help bool
 
 	flag.StringVar(&host, "host", "127.0.0.1", "The hostname")
@@ -19,6 +20,7 @@ func main() {
 	flag.BoolVar(&help, "help", false, "Shows the help")
 	flag.StringVar(&username, "username", "test", "The username")
 	flag.StringVar(&password, "password", "enter", "The password")
+	flag.BoolVar(&stalk, "stalk", false, "Stalk mode: don't really join, just listen")
 	flag.Parse()
 
 	if help {
@@ -26,12 +28,15 @@ func main() {
 		return
 	}
 
+	fmt.Printf("Connecting to '%s:%d' with username '%s'\n", host, port, username)
+
 	client := NewClient(host, port)
 	client.AddListener(ClientAckHandler{})
 
 	ch := &ClientHandler{
-		Username: username,
-		Password: password,
+		Username:  username,
+		Password:  password,
+		StalkMode: stalk,
 	}
 	client.AddCommandListener(ch)
 

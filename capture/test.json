@@ -1,0 +1,126 @@
+[
+  {
+    "_index": "packets-2021-09-24",
+    "_type": "doc",
+    "_score": null,
+    "_source": {
+      "layers": {
+        "frame": {
+          "frame.interface_id": "0",
+          "frame.interface_id_tree": {
+            "frame.interface_name": "lo"
+          },
+          "frame.encap_type": "1",
+          "frame.time": "Sep 24, 2021 19:40:44.375341481 CEST",
+          "frame.offset_shift": "0.000000000",
+          "frame.time_epoch": "1632505244.375341481",
+          "frame.time_delta": "0.001418672",
+          "frame.time_delta_displayed": "0.001418672",
+          "frame.time_relative": "9.278481875",
+          "frame.number": "10",
+          "frame.len": "80",
+          "frame.cap_len": "80",
+          "frame.marked": "0",
+          "frame.ignored": "0",
+          "frame.protocols": "eth:ethertype:ip:udp:minetest:minetest.server",
+          "frame.coloring_rule.name": "UDP",
+          "frame.coloring_rule.string": "udp"
+        },
+        "eth": {
+          "eth.dst": "00:00:00:00:00:00",
+          "eth.dst_tree": {
+            "eth.dst_resolved": "00:00:00_00:00:00",
+            "eth.dst.oui": "0",
+            "eth.dst.oui_resolved": "Officially Xerox, but 0:0:0:0:0:0 is more common",
+            "eth.addr": "00:00:00:00:00:00",
+            "eth.addr_resolved": "00:00:00_00:00:00",
+            "eth.addr.oui": "0",
+            "eth.addr.oui_resolved": "Officially Xerox, but 0:0:0:0:0:0 is more common",
+            "eth.dst.lg": "0",
+            "eth.lg": "0",
+            "eth.dst.ig": "0",
+            "eth.ig": "0"
+          },
+          "eth.src": "00:00:00:00:00:00",
+          "eth.src_tree": {
+            "eth.src_resolved": "00:00:00_00:00:00",
+            "eth.src.oui": "0",
+            "eth.src.oui_resolved": "Officially Xerox, but 0:0:0:0:0:0 is more common",
+            "eth.addr": "00:00:00:00:00:00",
+            "eth.addr_resolved": "00:00:00_00:00:00",
+            "eth.addr.oui": "0",
+            "eth.addr.oui_resolved": "Officially Xerox, but 0:0:0:0:0:0 is more common",
+            "eth.src.lg": "0",
+            "eth.lg": "0",
+            "eth.src.ig": "0",
+            "eth.ig": "0"
+          },
+          "eth.type": "0x00000800"
+        },
+        "ip": {
+          "ip.version": "4",
+          "ip.hdr_len": "20",
+          "ip.dsfield": "0x00000000",
+          "ip.dsfield_tree": {
+            "ip.dsfield.dscp": "0",
+            "ip.dsfield.ecn": "0"
+          },
+          "ip.len": "66",
+          "ip.id": "0x0000536b",
+          "ip.flags": "0x00004000",
+          "ip.flags_tree": {
+            "ip.flags.rb": "0",
+            "ip.flags.df": "1",
+            "ip.flags.mf": "0"
+          },
+          "ip.frag_offset": "0",
+          "ip.ttl": "64",
+          "ip.proto": "17",
+          "ip.checksum": "0x0000e93d",
+          "ip.checksum.status": "2",
+          "ip.src": "127.0.0.1",
+          "ip.addr": "127.0.0.1",
+          "ip.src_host": "127.0.0.1",
+          "ip.host": "127.0.0.1",
+          "ip.dst": "127.0.0.1",
+          "ip.addr": "127.0.0.1",
+          "ip.dst_host": "127.0.0.1",
+          "ip.host": "127.0.0.1"
+        },
+        "udp": {
+          "udp.srcport": "30000",
+          "udp.dstport": "38432",
+          "udp.port": "30000",
+          "udp.port": "38432",
+          "udp.length": "46",
+          "udp.checksum": "0x0000fe41",
+          "udp.checksum.status": "2",
+          "udp.stream": "1",
+          "Timestamps": {
+            "udp.time_relative": "0.114886622",
+            "udp.time_delta": "0.001418672"
+          }
+        },
+        "_ws.lua.fake": "",
+        "minetest": {
+          "minetest.id": "0x4f457403",
+          "minetest.peer": "1",
+          "minetest.channel": "0",
+          "minetest.type": "3",
+          "minetest.seq": "65501",
+          "minetest.subtype": "1"
+        },
+        "_ws.lua.fake": "",
+        "minetest.server": {
+          "minetest.server.command": "0x00000002",
+          "minetest.server.hello_ser_version": "28",
+          "minetest.server.hello_compression": "0",
+          "minetest.server.hello_proto": "39",
+          "minetest.server.hello_auth_modes": "00:00:00:04",
+          "minetest.server.hello_legacy_namelen": "14",
+          "minetest.server.hello_legacy_name": "BuckarooBanzai"
+        }
+      }
+    }
+  }
+]

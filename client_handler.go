@@ -150,3 +150,19 @@ func (ch *ClientHandler) OnServerTimeOfDay(tod *commands.ServerTimeOfDay) {
 func (ch *ClientHandler) OnServerChatMessage(msg *commands.ServerChatMessage) {
 	fmt.Printf("Chat: '%s'\n", msg.Message)
 }
+
+func (ch *ClientHandler) OnAddParticleSpawner(aps *commands.ServerAddParticleSpawner) {
+
+}
+
+func (ch *ClientHandler) OnHudChange(hud *commands.ServerHudChange) {
+
+}
+
+func (ch *ClientHandler) OnDetachedInventory(inv *commands.ServerDetachedInventory) {
+
+}
+
+func (ch *ClientHandler) OnActiveObjectMessage(aom *commands.ServerActiveObjectMessage) {
+
+}

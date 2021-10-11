@@ -10,4 +10,8 @@ type ServerCommandHandler interface {
 	OnServerBlockData(block *ServerBlockData)
 	OnServerTimeOfDay(tod *ServerTimeOfDay)
 	OnServerChatMessage(msg *ServerChatMessage)
+	OnAddParticleSpawner(aps *ServerAddParticleSpawner)
+	OnHudChange(hud *ServerHudChange)
+	OnDetachedInventory(inv *ServerDetachedInventory)
+	OnActiveObjectMessage(aom *ServerActiveObjectMessage)
 }

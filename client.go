@@ -173,6 +173,30 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 			c.cmd_handler.OnServerChatMessage(cmd)
 		}
 
+	case commands.ServerCommandAddParticleSpawner:
+		cmd := &commands.ServerAddParticleSpawner{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.cmd_handler.OnAddParticleSpawner(cmd)
+		}
+
+	case commands.ServerCommandDetachedInventory:
+		cmd := &commands.ServerDetachedInventory{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.cmd_handler.OnDetachedInventory(cmd)
+		}
+
+	case commands.ServerCommandHudChange:
+		cmd := &commands.ServerHudChange{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.cmd_handler.OnHudChange(cmd)
+		}
+
+	case commands.ServerCommandActiveObjectMessage:
+		cmd := &commands.ServerActiveObjectMessage{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.cmd_handler.OnActiveObjectMessage(cmd)
+		}
+
 	default:
 		fmt.Printf("Unknown command received: %d\n", commandId)
 	}

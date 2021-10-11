@@ -42,13 +42,37 @@ func (c *Client) Start() error {
 }
 
 func (c *Client) Init() error {
-	peerInit := packet.CreateReliable(0, commands.NewClientPeerInit())
+	peerInit := packet.CreateReliable(0, []byte{0, 0})
 	peerInit.Channel = 0
 	return c.Send(peerInit)
 }
 
 func (c *Client) SetServerCommandHandler(cmd_handler commands.ServerCommandHandler) {
 	c.cmd_handler = cmd_handler
+}
+
+func (c *Client) SendOriginalCommand(cmd packet.Command) error {
+	//fmt.Printf("Sending original command: %s\n", cmd)
+
+	payload, err := packet.CreatePayload(cmd)
+	if err != nil {
+		return err
+	}
+
+	pkg := packet.CreateOriginal(c.PeerID, payload)
+	return c.Send(pkg)
+}
+
+func (c *Client) SendCommand(cmd packet.Command) error {
+	//fmt.Printf("Sending command: %s\n", cmd)
+
+	payload, err := packet.CreatePayload(cmd)
+	if err != nil {
+		return err
+	}
+
+	pkg := packet.CreateReliable(c.PeerID, payload)
+	return c.Send(pkg)
 }
 
 func (c *Client) Send(packet *packet.Packet) error {
@@ -67,6 +91,8 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 	commandId := binary.BigEndian.Uint16(payload[0:])
 	commandPayload := payload[2:]
 	var err error
+
+	//fmt.Printf("Received commandId: %d\n", commandId)
 
 	switch commandId {
 	case commands.ServerCommandSetPeer:
@@ -130,7 +156,7 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 	return err
 }
 
-func (c *Client) onReceive(p *packet.Packet) {
+func (c *Client) onReceive(p *packet.Packet) error {
 	//fmt.Printf("Received packet: %s\n", p)
 
 	if p.PacketType == packet.Reliable || p.PacketType == packet.Original {
@@ -148,16 +174,14 @@ func (c *Client) onReceive(p *packet.Packet) {
 	if p.PacketType == packet.Reliable {
 		ack := packet.CreateControlAck(c.PeerID, p)
 		ack.Channel = p.Channel
-		err := c.Send(ack)
-		if err != nil {
-			panic(err)
+		if err := c.Send(ack); err != nil {
+			return err
 		}
 	}
 
 	if p.SubType == packet.Reliable || p.SubType == packet.Original {
-		err := c.handleCommandPayload(p.Payload)
-		if err != nil {
-			panic(err)
+		if err := c.handleCommandPayload(p.Payload); err != nil {
+			return err
 		}
 	}
 
@@ -166,13 +190,13 @@ func (c *Client) onReceive(p *packet.Packet) {
 		data := c.sph.AddPacket(p.SplitPayload)
 
 		if data != nil {
-			err := c.handleCommandPayload(data)
-			if err != nil {
-				panic(err)
+			if err := c.handleCommandPayload(data); err != nil {
+				return err
 			}
 		}
 	}
 
+	return nil
 }
 
 func (c *Client) rxLoop() {
@@ -190,6 +214,9 @@ func (c *Client) rxLoop() {
 			panic(err)
 		}
 
-		c.onReceive(p)
+		err = c.onReceive(p)
+		if err != nil {
+			panic(err)
+		}
 	}
 }

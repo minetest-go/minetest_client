@@ -22,7 +22,7 @@ func (ch *ClientHandler) OnServerSetPeer(peer *commands.ServerSetPeer) {
 	fmt.Printf("Received set_peerid: %d\n", peer.PeerID)
 	go func() {
 		time.Sleep(1 * time.Second)
-		err := ch.Client.Send(packet.CreateOriginal(ch.Client.PeerID, commands.NewClientInit(ch.Username)))
+		err := ch.Client.SendOriginalCommand(commands.NewClientInit(ch.Username))
 		if err != nil {
 			panic(err)
 		}
@@ -30,7 +30,6 @@ func (ch *ClientHandler) OnServerSetPeer(peer *commands.ServerSetPeer) {
 }
 
 func (ch *ClientHandler) OnServerHello(hello *commands.ServerHello) {
-	fmt.Println(hello)
 	if ch.StalkMode {
 		return
 	}
@@ -45,7 +44,7 @@ func (ch *ClientHandler) OnServerHello(hello *commands.ServerHello) {
 		}
 
 		fmt.Println("Sending SRP bytes A")
-		err = ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, commands.NewClientSRPBytesA(ch.SRPPubA)))
+		err = ch.Client.SendCommand(commands.NewClientSRPBytesA(ch.SRPPubA))
 		if err != nil {
 			panic(err)
 		}
@@ -59,7 +58,7 @@ func (ch *ClientHandler) OnServerHello(hello *commands.ServerHello) {
 		}
 
 		fmt.Println("Sending first SRP")
-		err = ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, commands.NewClientFirstSRP(salt, verifier)))
+		err = ch.Client.SendCommand(commands.NewClientFirstSRP(salt, verifier))
 		if err != nil {
 			panic(err)
 		}
@@ -78,7 +77,7 @@ func (ch *ClientHandler) OnServerSRPBytesSB(bytesSB *commands.ServerSRPBytesSB) 
 	proof := srp.ClientProof(identifier, bytesSB.BytesS, ch.SRPPubA, bytesSB.BytesB, clientK)
 
 	fmt.Println("Sending SRP bytes M")
-	err = ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, commands.NewClientSRPBytesM(proof)))
+	err = ch.Client.SendCommand(commands.NewClientSRPBytesM(proof))
 	if err != nil {
 		panic(err)
 	}
@@ -86,7 +85,7 @@ func (ch *ClientHandler) OnServerSRPBytesSB(bytesSB *commands.ServerSRPBytesSB) 
 
 func (ch *ClientHandler) OnServerAuthAccept(auth *commands.ServerAuthAccept) {
 	fmt.Println("Sending INIT2")
-	err := ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, commands.NewClientInit2()))
+	err := ch.Client.SendCommand(commands.NewClientInit2())
 	if err != nil {
 		panic(err)
 	}
@@ -105,7 +104,7 @@ func (ch *ClientHandler) OnServerAnnounceMedia(announce *commands.ServerAnnounce
 
 	fmt.Println("Sending REQUEST_MEDIA")
 	reqmedia_cmd := commands.NewClientRequestMedia(files)
-	err := ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, reqmedia_cmd))
+	err := ch.Client.SendCommand(reqmedia_cmd)
 	if err != nil {
 		panic(err)
 	}
@@ -116,14 +115,14 @@ func (ch *ClientHandler) OnServerCSMRestrictionFlags(flags *commands.ServerCSMRe
 	fmt.Println("Server sends csm restriction flags")
 
 	fmt.Println("Sending CLIENT_READY")
-	err := ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, commands.NewClientReady(5, 5, 5, "mt-bot", 4)))
+	err := ch.Client.SendCommand(commands.NewClientReady(5, 5, 5, "mt-bot", 4))
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("Sending PLAYERPOS")
 	ppos := commands.NewClientPlayerPos()
-	err = ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, ppos))
+	err = ch.Client.SendCommand(ppos)
 	if err != nil {
 		panic(err)
 	}
@@ -135,7 +134,7 @@ func (ch *ClientHandler) OnServerBlockData(block *commands.ServerBlockData) {
 	gotblocks := commands.NewClientGotBlocks()
 	gotblocks.AddBlock(block.Pos)
 
-	err := ch.Client.Send(packet.CreateReliable(ch.Client.PeerID, gotblocks))
+	err := ch.Client.SendCommand(gotblocks)
 	if err != nil {
 		panic(err)
 	}

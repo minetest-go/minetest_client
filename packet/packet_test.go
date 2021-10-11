@@ -62,7 +62,10 @@ func TestParseSplit(t *testing.T) {
 func TestReliableSRPBytesA(t *testing.T) {
 	bytes_a := make([]byte, 256)
 
-	p := CreateReliable(2, commands.NewClientSRPBytesA(bytes_a))
+	payload, err := CreatePayload(commands.NewClientSRPBytesA(bytes_a))
+	assert.NoError(t, err)
+
+	p := CreateReliable(2, payload)
 	data, err := p.MarshalPacket()
 
 	assert.NoError(t, err)
@@ -103,7 +106,10 @@ func TestReliableFirstSRP(t *testing.T) {
 	salt := make([]byte, 16)
 	verifier := make([]byte, 256)
 
-	p := CreateReliable(2, commands.NewClientFirstSRP(salt, verifier))
+	payload, err := CreatePayload(commands.NewClientFirstSRP(salt, verifier))
+	assert.NoError(t, err)
+
+	p := CreateReliable(2, payload)
 	data, err := p.MarshalPacket()
 
 	assert.NoError(t, err)
@@ -141,7 +147,10 @@ func TestReliableFirstSRP(t *testing.T) {
 }
 
 func TestReliablePeerInit(t *testing.T) {
-	p := CreateReliable(2, commands.NewClientPeerInit())
+	payload, err := CreatePayload(commands.NewClientPeerInit())
+	assert.NoError(t, err)
+
+	p := CreateReliable(2, payload)
 	p.SeqNr = 65500
 	data, err := p.MarshalPacket()
 

@@ -65,12 +65,7 @@ func CreatePayload(cmd Command) ([]byte, error) {
 	return payload, nil
 }
 
-func CreateReliable(peerId uint16, command Command) *Packet {
-	payload, err := CreatePayload(command)
-	if err != nil {
-		panic(err)
-	}
-
+func CreateReliable(peerId uint16, payload []byte) *Packet {
 	return &Packet{
 		PacketType: Reliable,
 		Payload:    payload,
@@ -81,12 +76,7 @@ func CreateReliable(peerId uint16, command Command) *Packet {
 	}
 }
 
-func CreateOriginal(peerId uint16, command Command) *Packet {
-	payload, err := CreatePayload(command)
-	if err != nil {
-		panic(err)
-	}
-
+func CreateOriginal(peerId uint16, payload []byte) *Packet {
 	return &Packet{
 		PacketType: Original,
 		Payload:    payload,
@@ -189,7 +179,7 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 
 func (p *Packet) String() string {
 	return fmt.Sprintf("{Packet Type: %s, PeerID: %d, Channel: %d, SeqNr: %d,"+
-		"Subtype: %s, ControlType: %s, SplitPayload: %s}",
+		"Subtype: %s, ControlType: %s, #Payload: %d, SplitPayload: %s}",
 		p.PacketType, p.PeerID, p.Channel, p.SeqNr,
-		p.SubType, p.ControlType, p.SplitPayload)
+		p.SubType, p.ControlType, len(p.Payload), p.SplitPayload)
 }

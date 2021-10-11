@@ -99,6 +99,13 @@ func (ch *ClientHandler) OnCommandReceive(c *Client, cmd packet.Command) {
 		}
 	case commands.ServerCommandAnnounceMedia:
 		fmt.Println("Server announces media")
+		media_pkg, ok := cmd.(*commands.ServerAnnounceMedia)
+		if !ok {
+			panic("invalid type")
+		}
+
+		fmt.Println(media_pkg)
+
 	case commands.ServerCommandCSMRestrictionFlags:
 		fmt.Println("Server sends csm restriction flags")
 

@@ -31,7 +31,6 @@ func main() {
 	fmt.Printf("Connecting to '%s:%d' with username '%s'\n", host, port, username)
 
 	client := NewClient(host, port)
-	client.AddListener(ClientAckHandler{})
 
 	ch := &ClientHandler{
 		Username:  username,

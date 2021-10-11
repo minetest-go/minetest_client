@@ -9,10 +9,6 @@ import (
 	"net"
 )
 
-type ClientPacketListener interface {
-	OnPacketReceive(c *Client, p *packet.Packet)
-}
-
 type ClientCommandListener interface {
 	OnCommandReceive(c *Client, cmd packet.Command)
 }
@@ -22,7 +18,6 @@ type Client struct {
 	Host          string
 	Port          int
 	PeerID        uint16
-	listeners     []ClientPacketListener
 	cmd_listeners []ClientCommandListener
 	sph           *packet.SplitpacketHandler
 }
@@ -31,7 +26,6 @@ func NewClient(host string, port int) *Client {
 	return &Client{
 		Host:          host,
 		Port:          port,
-		listeners:     make([]ClientPacketListener, 0),
 		cmd_listeners: make([]ClientCommandListener, 0),
 		sph:           packet.NewSplitPacketHandler(),
 	}
@@ -46,10 +40,6 @@ func (c *Client) Start() error {
 	go c.rxLoop()
 
 	return nil
-}
-
-func (c *Client) AddListener(listener ClientPacketListener) {
-	c.listeners = append(c.listeners, listener)
 }
 
 func (c *Client) AddCommandListener(l ClientCommandListener) {
@@ -84,8 +74,14 @@ func (c *Client) onReceive(p *packet.Packet) {
 		}
 	}
 
-	for _, listener := range c.listeners {
-		listener.OnPacketReceive(c, p)
+	// send ack
+	if p.PacketType == packet.Reliable {
+		ack := packet.CreateControlAck(c.PeerID, p)
+		ack.Channel = p.Channel
+		err := c.Send(ack)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if p.Command != nil && (p.SubType == packet.Reliable || p.SubType == packet.Original) {

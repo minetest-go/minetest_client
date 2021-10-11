@@ -25,6 +25,7 @@ const (
 	ServerCommandCSMRestrictionFlags   uint16 = 42
 	ServerCommandChatMessage           uint16 = 47
 	ServerCommandActiveObjectMessage   uint16 = 50
+	ServerCommandMedia                 uint16 = 56
 	ServerCommandNodeDefinitions       uint16 = 58
 	ServerCommandAnnounceMedia         uint16 = 60
 	ServerCommandItemDefinitions       uint16 = 61

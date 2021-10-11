@@ -71,8 +71,32 @@ func (c *Client) SendCommand(cmd packet.Command) error {
 		return err
 	}
 
-	pkg := packet.CreateReliable(c.PeerID, payload)
-	return c.Send(pkg)
+	if len(payload) < packet.MaxPacketLength {
+		// one packet
+		pkg := packet.CreateReliable(c.PeerID, payload)
+		return c.Send(pkg)
+
+	} else {
+		// split packet
+		pkgs, err := c.sph.SplitPayload(payload)
+		if err != nil {
+			return err
+		}
+
+		for _, pkg := range pkgs {
+			pkg.PeerID = c.PeerID
+			pkg.Channel = 1
+			pkg.SeqNr = packet.NextSequenceNr()
+
+			err = c.Send(pkg)
+			if err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
 }
 
 func (c *Client) Send(packet *packet.Packet) error {

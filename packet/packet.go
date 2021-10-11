@@ -115,9 +115,21 @@ func (p *Packet) MarshalPacket() ([]byte, error) {
 		bytes := make([]byte, 3)
 		binary.BigEndian.PutUint16(bytes, p.SeqNr)
 		bytes[2] = byte(p.SubType)
-
 		packet = append(packet, bytes...)
-		packet = append(packet, p.Payload...)
+
+		if p.SubType == Original || p.SubType == Reliable {
+			// just add the payload
+			packet = append(packet, p.Payload...)
+
+		} else if p.SubType == Split && p.SplitPayload != nil {
+			// Add the split data
+			splitSeqBytes := make([]byte, 6)
+			binary.BigEndian.PutUint16(splitSeqBytes[0:], p.SplitPayload.SeqNr)
+			binary.BigEndian.PutUint16(splitSeqBytes[2:], p.SplitPayload.ChunkCount)
+			binary.BigEndian.PutUint16(splitSeqBytes[4:], p.SplitPayload.ChunkNumber)
+			packet = append(packet, splitSeqBytes...)
+			packet = append(packet, p.SplitPayload.Data...)
+		}
 
 	} else if p.PacketType == Control {
 		bytes := make([]byte, 3)

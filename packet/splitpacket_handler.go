@@ -3,12 +3,14 @@ package packet
 type SplitpacketHandler struct {
 	sessions       map[uint16]map[uint16]*SplitPayload
 	sessions_count map[uint16]uint16
+	seq_nr         uint16
 }
 
 func NewSplitPacketHandler() *SplitpacketHandler {
 	return &SplitpacketHandler{
 		sessions:       make(map[uint16]map[uint16]*SplitPayload),
 		sessions_count: make(map[uint16]uint16),
+		seq_nr:         65500,
 	}
 }
 
@@ -38,4 +40,40 @@ func (sph *SplitpacketHandler) AddPacket(sp *SplitPayload) []byte {
 	}
 
 	return nil
+}
+
+func (sph *SplitpacketHandler) nextSequenceNr() uint16 {
+	if sph.seq_nr >= 65535 {
+		sph.seq_nr = 0
+	} else {
+		sph.seq_nr++
+	}
+
+	return sph.seq_nr
+}
+
+const MaxPacketLength = 1400
+
+func (sph *SplitpacketHandler) SplitPayload(payload []byte) ([]*Packet, error) {
+	packets := make([]*Packet, 0)
+	seqNr = sph.nextSequenceNr()
+
+	parts := split(payload, MaxPacketLength)
+	chunk_count := len(parts)
+
+	for i, part := range parts {
+		pkg := &Packet{
+			PacketType: Reliable,
+			SubType:    Split,
+			SplitPayload: &SplitPayload{
+				SeqNr:       seqNr,
+				ChunkCount:  uint16(chunk_count),
+				ChunkNumber: uint16(i),
+				Data:        part,
+			},
+		}
+		packets = append(packets, pkg)
+	}
+
+	return packets, nil
 }

@@ -9,11 +9,12 @@ import (
 )
 
 type ClientHandler struct {
-	Username  string
-	Password  string
-	StalkMode bool
-	SRPPubA   []byte
-	SRPPrivA  []byte
+	Username    string
+	Password    string
+	StalkMode   bool
+	SRPPubA     []byte
+	SRPPrivA    []byte
+	MediaHashes map[string][]byte
 }
 
 func (ch *ClientHandler) Init(c *Client) error {
@@ -104,7 +105,20 @@ func (ch *ClientHandler) OnCommandReceive(c *Client, cmd packet.Command) {
 			panic("invalid type")
 		}
 
-		fmt.Println(media_pkg)
+		ch.MediaHashes = media_pkg.Hashes
+
+		files := make([]string, 0)
+		for name := range media_pkg.Hashes {
+			fmt.Printf("Name: '%s'\n", name)
+			files = append(files, name)
+		}
+
+		fmt.Println("Sending REQUEST_MEDIA")
+		reqmedia_cmd := commands.NewClientRequestMedia(files)
+		err := c.Send(packet.CreateReliable(c.PeerID, reqmedia_cmd))
+		if err != nil {
+			panic(err)
+		}
 
 	case commands.ServerCommandCSMRestrictionFlags:
 		fmt.Println("Server sends csm restriction flags")

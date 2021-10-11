@@ -2,15 +2,16 @@ package commands
 
 // from Client to Server
 const (
-	ClientCommandPeerInit  uint16 = 0
-	ClientCommandInit      uint16 = 2
-	ClientCommandInit2     uint16 = 17
-	ClientCommandPlayerPos uint16 = 35
-	ClientCommandGotBlocks uint16 = 36
-	ClientCommandReady     uint16 = 67
-	ClientCommandFirstSRP  uint16 = 80
-	ClientCommandSRPBytesA uint16 = 81
-	ClientCommandSRPBytesM uint16 = 82
+	ClientCommandPeerInit     uint16 = 0
+	ClientCommandInit         uint16 = 2
+	ClientCommandInit2        uint16 = 17
+	ClientCommandPlayerPos    uint16 = 35
+	ClientCommandGotBlocks    uint16 = 36
+	ClientCommandRequestMedia uint16 = 64
+	ClientCommandReady        uint16 = 67
+	ClientCommandFirstSRP     uint16 = 80
+	ClientCommandSRPBytesA    uint16 = 81
+	ClientCommandSRPBytesM    uint16 = 82
 )
 
 // from Server to Client

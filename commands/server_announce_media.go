@@ -30,9 +30,16 @@ func (p *ServerAnnounceMedia) UnmarshalPacket(payload []byte) error {
 	offset := 2
 	for i := 0; i < int(p.FileCount); i++ {
 		name_len := binary.BigEndian.Uint16(payload[offset:])
+		if name_len == 0 {
+			return fmt.Errorf("name-len is 0 at %d", offset)
+		}
 		offset += 2
 
-		name := payload[offset : offset+(int(name_len))]
+		name := string(payload[offset : offset+(int(name_len))])
+		name = strings.TrimSpace(name)
+		if len(name) == 0 {
+			return fmt.Errorf("len(name) is 0 at %d", offset)
+		}
 		offset += int(name_len)
 
 		hash_len := binary.BigEndian.Uint16(payload[offset:])
@@ -46,7 +53,7 @@ func (p *ServerAnnounceMedia) UnmarshalPacket(payload []byte) error {
 			return err
 		}
 
-		p.Hashes[string(name)] = hash_binary
+		p.Hashes[name] = hash_binary
 	}
 
 	remoteservers_len := binary.BigEndian.Uint16(payload[offset:])

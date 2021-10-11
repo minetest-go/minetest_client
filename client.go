@@ -100,8 +100,9 @@ func (c *Client) onReceive(p *packet.Packet) {
 
 		if data != nil {
 			commandId := binary.BigEndian.Uint16(data[0:])
-			cmd, err := packet.CreateCommand(commandId, data[2+4:])
+			cmd, err := packet.CreateCommand(commandId, data[2:])
 			if err != nil {
+				fmt.Printf("Error creating command %d\n", commandId)
 				panic(err)
 			}
 

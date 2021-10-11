@@ -77,7 +77,7 @@ func (p *ServerItemDefinitions) MarshalPacket() ([]byte, error) {
 
 func (p *ServerItemDefinitions) UnmarshalPacket(payload []byte) error {
 	p.Definitions = make([]*ItemDefinition, 0)
-	r, err := zlib.NewReader(bytes.NewReader(payload))
+	r, err := zlib.NewReader(bytes.NewReader(payload[4:]))
 	if err != nil {
 		return err
 	}

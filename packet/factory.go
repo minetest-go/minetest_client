@@ -57,6 +57,7 @@ func CreateCommand(commandId uint16, payload []byte) (Command, error) {
 	}
 
 	if cmd != nil {
+		//fmt.Printf("Unmarshal: %d\n", commandId)
 		err := cmd.UnmarshalPacket(payload)
 		return cmd, err
 	}

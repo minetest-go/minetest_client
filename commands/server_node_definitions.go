@@ -37,7 +37,7 @@ func (p *ServerNodeDefinitions) MarshalPacket() ([]byte, error) {
 
 func (p *ServerNodeDefinitions) UnmarshalPacket(payload []byte) error {
 	p.Definitions = make([]*NodeDefinition, 0)
-	r, err := zlib.NewReader(bytes.NewReader(payload))
+	r, err := zlib.NewReader(bytes.NewReader(payload[4:]))
 	if err != nil {
 		return err
 	}

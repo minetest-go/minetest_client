@@ -53,6 +53,20 @@ func NextSequenceNr() uint16 {
 	return seqNr
 }
 
+func CreatePayload(cmd Command) ([]byte, error) {
+	inner_payload, err := cmd.MarshalPacket()
+	if err != nil {
+		return nil, err
+	}
+
+	payload := make([]byte, len(inner_payload)+2)
+	copy(payload[2:], inner_payload)
+
+	binary.BigEndian.PutUint16(payload[0:], cmd.GetCommandId())
+
+	return payload, nil
+}
+
 func CreateReliable(peerId uint16, command Command) *Packet {
 	return &Packet{
 		PacketType: Reliable,
@@ -89,16 +103,6 @@ func CreateControl(peerId uint16, controlType ControlType) *Packet {
 		ControlType: controlType,
 		PeerID:      peerId,
 		SeqNr:       NextSequenceNr(),
-	}
-}
-
-func CreatePacket(packetType PacketType, subType PacketType, peerId uint16, command Command) *Packet {
-	return &Packet{
-		PacketType: packetType,
-		SubType:    subType,
-		Command:    command,
-		PeerID:     peerId,
-		SeqNr:      NextSequenceNr(),
 	}
 }
 

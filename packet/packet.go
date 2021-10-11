@@ -7,7 +7,6 @@ import (
 )
 
 type Packet struct {
-	Command      Command
 	PacketType   PacketType
 	SubType      PacketType
 	ControlType  ControlType
@@ -15,7 +14,6 @@ type Packet struct {
 	SeqNr        uint16
 	Channel      uint8
 	Payload      []byte
-	CommandID    uint16
 	SplitPayload *SplitPayload
 }
 
@@ -68,10 +66,15 @@ func CreatePayload(cmd Command) ([]byte, error) {
 }
 
 func CreateReliable(peerId uint16, command Command) *Packet {
+	payload, err := CreatePayload(command)
+	if err != nil {
+		panic(err)
+	}
+
 	return &Packet{
 		PacketType: Reliable,
+		Payload:    payload,
 		SubType:    Original,
-		Command:    command,
 		PeerID:     peerId,
 		SeqNr:      NextSequenceNr(),
 		Channel:    1,
@@ -79,9 +82,14 @@ func CreateReliable(peerId uint16, command Command) *Packet {
 }
 
 func CreateOriginal(peerId uint16, command Command) *Packet {
+	payload, err := CreatePayload(command)
+	if err != nil {
+		panic(err)
+	}
+
 	return &Packet{
 		PacketType: Original,
-		Command:    command,
+		Payload:    payload,
 		PeerID:     peerId,
 		Channel:    1,
 	}
@@ -114,17 +122,12 @@ func (p *Packet) MarshalPacket() ([]byte, error) {
 	packet[7] = byte(p.PacketType)
 
 	if p.PacketType == Reliable {
-		bytes := make([]byte, 5)
+		bytes := make([]byte, 3)
 		binary.BigEndian.PutUint16(bytes, p.SeqNr)
 		bytes[2] = byte(p.SubType)
-		binary.BigEndian.PutUint16(bytes[3:], p.Command.GetCommandId())
 
 		packet = append(packet, bytes...)
-		payload, err := p.Command.MarshalPacket()
-		if err != nil {
-			return nil, err
-		}
-		packet = append(packet, payload...)
+		packet = append(packet, p.Payload...)
 
 	} else if p.PacketType == Control {
 		bytes := make([]byte, 3)
@@ -133,14 +136,7 @@ func (p *Packet) MarshalPacket() ([]byte, error) {
 		packet = append(packet, bytes...)
 
 	} else if p.PacketType == Original {
-		bytes := make([]byte, 2)
-		binary.BigEndian.PutUint16(bytes, p.Command.GetCommandId())
-		packet = append(packet, bytes...)
-		payload, err := p.Command.MarshalPacket()
-		if err != nil {
-			return nil, err
-		}
-		packet = append(packet, payload...)
+		packet = append(packet, p.Payload...)
 
 	}
 
@@ -184,12 +180,7 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 			p.SplitPayload = spl
 		default:
 			//fmt.Printf("Unknown packet: %s\n", fmt.Sprint(data))
-			//TODO: split
-			p.CommandID = binary.BigEndian.Uint16(data[11:])
-			p.Payload = data[13:]
-			cmd, err := CreateCommand(p.CommandID, p.Payload)
-			p.Command = cmd
-			return err
+			p.Payload = data[11:]
 		}
 	}
 
@@ -198,7 +189,7 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 
 func (p *Packet) String() string {
 	return fmt.Sprintf("{Packet Type: %s, PeerID: %d, Channel: %d, SeqNr: %d,"+
-		"Subtype: %s, ControlType: %s CommandID: %d, Command: %s, SplitPayload: %s}",
+		"Subtype: %s, ControlType: %s, SplitPayload: %s}",
 		p.PacketType, p.PeerID, p.Channel, p.SeqNr,
-		p.SubType, p.ControlType, p.CommandID, p.Command, p.SplitPayload)
+		p.SubType, p.ControlType, p.SplitPayload)
 }

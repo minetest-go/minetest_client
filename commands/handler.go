@@ -3,8 +3,9 @@ package commands
 type ServerCommandHandler interface {
 	OnServerSetPeer(peer *ServerSetPeer)
 	OnServerHello(hello *ServerHello)
-	OnServerSRPBytesSB(srp *ServerSRPBytesSB)
+	OnServerSRPBytesSB(bytesSB *ServerSRPBytesSB)
 	OnServerAuthAccept(auth *ServerAuthAccept)
+	OnServerAnnounceMedia(announce *ServerAnnounceMedia)
 	OnServerCSMRestrictionFlags(flags *ServerCSMRestrictionFlags)
 	OnServerBlockData(block *ServerBlockData)
 	OnServerTimeOfDay(tod *ServerTimeOfDay)

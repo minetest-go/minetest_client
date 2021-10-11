@@ -179,3 +179,14 @@ func TestReliablePeerInit(t *testing.T) {
 	assert.Equal(t, uint8(0), data[11])
 	assert.Equal(t, uint8(0), data[12])
 }
+
+func TestCreatePayload(t *testing.T) {
+	cmd := commands.NewClientPeerInit()
+	payload, err := CreatePayload(cmd)
+	assert.NoError(t, err)
+	assert.NotNil(t, payload)
+
+	assert.Equal(t, 2, len(payload))
+	assert.Equal(t, uint8(0), payload[0])
+	assert.Equal(t, uint8(0), payload[1])
+}

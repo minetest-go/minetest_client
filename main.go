@@ -33,11 +33,12 @@ func main() {
 	client := NewClient(host, port)
 
 	ch := &ClientHandler{
+		Client:    client,
 		Username:  username,
 		Password:  password,
 		StalkMode: stalk,
 	}
-	client.AddCommandListener(ch)
+	client.SetServerCommandHandler(ch)
 
 	err := client.Start()
 	if err != nil {
@@ -45,7 +46,7 @@ func main() {
 	}
 
 	time.Sleep(1 * time.Second)
-	err = ch.Init(client)
+	err = client.Init()
 	if err != nil {
 		panic(err)
 	}

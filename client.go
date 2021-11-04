@@ -197,6 +197,12 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 			c.cmd_handler.OnActiveObjectMessage(cmd)
 		}
 
+	case commands.ServerCommandDeleteParticleSpawner:
+		cmd := &commands.ServerDeleteParticleSpawner{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.cmd_handler.OnDeleteParticleSpawner(cmd)
+		}
+
 	default:
 		fmt.Printf("Unknown command received: %d\n", commandId)
 	}

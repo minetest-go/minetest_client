@@ -11,6 +11,7 @@ type ServerCommandHandler interface {
 	OnServerTimeOfDay(tod *ServerTimeOfDay)
 	OnServerChatMessage(msg *ServerChatMessage)
 	OnAddParticleSpawner(aps *ServerAddParticleSpawner)
+	OnDeleteParticleSpawner(msg *ServerDeleteParticleSpawner)
 	OnHudChange(hud *ServerHudChange)
 	OnDetachedInventory(inv *ServerDetachedInventory)
 	OnActiveObjectMessage(aom *ServerActiveObjectMessage)

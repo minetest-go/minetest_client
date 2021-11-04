@@ -166,3 +166,7 @@ func (ch *ClientHandler) OnDetachedInventory(inv *commands.ServerDetachedInvento
 func (ch *ClientHandler) OnActiveObjectMessage(aom *commands.ServerActiveObjectMessage) {
 
 }
+
+func (ch *ClientHandler) OnDeleteParticleSpawner(msg *commands.ServerDeleteParticleSpawner) {
+
+}

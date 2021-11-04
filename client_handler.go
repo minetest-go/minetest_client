@@ -170,3 +170,7 @@ func (ch *ClientHandler) OnActiveObjectMessage(aom *commands.ServerActiveObjectM
 func (ch *ClientHandler) OnDeleteParticleSpawner(msg *commands.ServerDeleteParticleSpawner) {
 
 }
+
+func (ch *ClientHandler) OnServerMovePlayer(msg *commands.ServerMovePlayer) {
+	fmt.Printf("Move player: '%s'\n", msg)
+}

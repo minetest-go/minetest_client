@@ -203,6 +203,12 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 			c.cmd_handler.OnDeleteParticleSpawner(cmd)
 		}
 
+	case commands.ServerCommandMovePlayer:
+		cmd := &commands.ServerMovePlayer{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.cmd_handler.OnServerMovePlayer(cmd)
+		}
+
 	default:
 		fmt.Printf("Unknown command received: %d\n", commandId)
 	}

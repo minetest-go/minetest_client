@@ -52,7 +52,7 @@ func (sph *SplitpacketHandler) nextSequenceNr() uint16 {
 	return sph.seq_nr
 }
 
-const MaxPacketLength = 1400
+const MaxPacketLength = 495
 
 func (sph *SplitpacketHandler) SplitPayload(payload []byte) ([]*Packet, error) {
 	packets := make([]*Packet, 0)

@@ -3,6 +3,7 @@ package commands
 import (
 	"encoding/binary"
 	"fmt"
+	"sort"
 )
 
 type ClientRequestMedia struct {
@@ -23,6 +24,7 @@ func (p *ClientRequestMedia) MarshalPacket() ([]byte, error) {
 	data := make([]byte, 2)
 	binary.BigEndian.PutUint16(data, uint16(len(p.Names)))
 
+	sort.Strings(p.Names)
 	for _, name := range p.Names {
 		name_len := make([]byte, 2)
 		binary.BigEndian.PutUint16(name_len, uint16(len(name)))

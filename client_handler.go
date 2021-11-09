@@ -106,6 +106,8 @@ func (ch *ClientHandler) OnServerCSMRestrictionFlags(flags *commands.ServerCSMRe
 		files = append(files, name)
 	}
 
+	time.Sleep(20 * time.Millisecond)
+
 	reqmedia_cmd := commands.NewClientRequestMedia(files)
 	err := ch.Client.SendCommand(reqmedia_cmd)
 	if err != nil {

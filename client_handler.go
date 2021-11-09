@@ -92,10 +92,8 @@ func (ch *ClientHandler) OnServerAuthAccept(auth *commands.ServerAuthAccept) {
 }
 
 func (ch *ClientHandler) OnServerAnnounceMedia(announce *commands.ServerAnnounceMedia) {
-	fmt.Println("Server announces media")
-
+	fmt.Printf("Server announces media: %d assets\n", announce.FileCount)
 	ch.MediaHashes = announce.Hashes
-
 }
 
 func (ch *ClientHandler) OnServerCSMRestrictionFlags(flags *commands.ServerCSMRestrictionFlags) {

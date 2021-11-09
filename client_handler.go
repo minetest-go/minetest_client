@@ -96,6 +96,10 @@ func (ch *ClientHandler) OnServerAnnounceMedia(announce *commands.ServerAnnounce
 	ch.MediaHashes = announce.Hashes
 }
 
+func (ch *ClientHandler) OnServerMedia(media *commands.ServerMedia) {
+	fmt.Printf("Server media: %s\n", media)
+}
+
 func (ch *ClientHandler) OnServerCSMRestrictionFlags(flags *commands.ServerCSMRestrictionFlags) {
 	fmt.Println("Server sends csm restriction flags")
 

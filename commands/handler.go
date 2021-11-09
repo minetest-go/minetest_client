@@ -6,6 +6,7 @@ type ServerCommandHandler interface {
 	OnServerSRPBytesSB(bytesSB *ServerSRPBytesSB)
 	OnServerAuthAccept(auth *ServerAuthAccept)
 	OnServerAnnounceMedia(announce *ServerAnnounceMedia)
+	OnServerMedia(media *ServerMedia)
 	OnServerCSMRestrictionFlags(flags *ServerCSMRestrictionFlags)
 	OnServerBlockData(block *ServerBlockData)
 	OnServerTimeOfDay(tod *ServerTimeOfDay)

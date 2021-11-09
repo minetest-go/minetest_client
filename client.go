@@ -209,6 +209,12 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 			c.cmd_handler.OnServerMovePlayer(cmd)
 		}
 
+	case commands.ServerCommandMedia:
+		cmd := &commands.ServerMedia{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.cmd_handler.OnServerMedia(cmd)
+		}
+
 	default:
 		fmt.Printf("Unknown command received: %d\n", commandId)
 	}

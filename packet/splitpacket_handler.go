@@ -10,7 +10,7 @@ func NewSplitPacketHandler() *SplitpacketHandler {
 	return &SplitpacketHandler{
 		sessions:       make(map[uint16]map[uint16]*SplitPayload),
 		sessions_count: make(map[uint16]uint16),
-		seq_nr:         65500,
+		seq_nr:         65500 - 1,
 	}
 }
 
@@ -56,7 +56,7 @@ const MaxPacketLength = 495
 
 func (sph *SplitpacketHandler) SplitPayload(payload []byte) ([]*Packet, error) {
 	packets := make([]*Packet, 0)
-	seqNr = sph.nextSequenceNr()
+	splitSeqNr := sph.nextSequenceNr()
 
 	parts := split(payload, MaxPacketLength)
 	chunk_count := len(parts)
@@ -66,7 +66,7 @@ func (sph *SplitpacketHandler) SplitPayload(payload []byte) ([]*Packet, error) {
 			PacketType: Reliable,
 			SubType:    Split,
 			SplitPayload: &SplitPayload{
-				SeqNr:       seqNr,
+				SeqNr:       splitSeqNr,
 				ChunkCount:  uint16(chunk_count),
 				ChunkNumber: uint16(i),
 				Data:        part,

@@ -81,6 +81,7 @@ func CreateOriginal(peerId uint16, payload []byte) *Packet {
 		PacketType: Original,
 		Payload:    payload,
 		PeerID:     peerId,
+		SeqNr:      NextSequenceNr(),
 		Channel:    1,
 	}
 }
@@ -161,8 +162,7 @@ func (p *Packet) UnmarshalPacket(data []byte) error {
 	p.PacketType = PacketType(data[7])
 
 	if p.PacketType == Reliable {
-		seqNr := binary.BigEndian.Uint16(data[8:])
-		p.SeqNr = seqNr
+		p.SeqNr = binary.BigEndian.Uint16(data[8:])
 		p.SubType = PacketType(data[10])
 
 		switch p.SubType {

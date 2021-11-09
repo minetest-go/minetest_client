@@ -18,7 +18,7 @@ func NewClientInit(playername string) *ClientInit {
 		ClientMax:                 28,
 		SupportedCompressionModes: 0,
 		MinNetProtoVersion:        37,
-		MaxNetProtoVersion:        39,
+		MaxNetProtoVersion:        40,
 		PlayerName:                playername,
 	}
 }

@@ -103,25 +103,26 @@ func (ch *ClientHandler) OnServerMedia(media *commands.ServerMedia) {
 func (ch *ClientHandler) OnServerCSMRestrictionFlags(flags *commands.ServerCSMRestrictionFlags) {
 	fmt.Println("Server sends csm restriction flags")
 
-	fmt.Println("Sending REQUEST_MEDIA")
-	files := make([]string, 0)
-	for name := range ch.MediaHashes {
-		//fmt.Printf("Name: '%s'\n", name)
-		files = append(files, name)
-	}
+	/*
+		fmt.Println("Sending REQUEST_MEDIA")
+		files := make([]string, 0)
+		for name := range ch.MediaHashes {
+			//fmt.Printf("Name: '%s'\n", name)
+			files = append(files, name)
+		}
 
-	time.Sleep(20 * time.Millisecond)
+		time.Sleep(20 * time.Millisecond)
 
-	reqmedia_cmd := commands.NewClientRequestMedia(files)
-	err := ch.Client.SendCommand(reqmedia_cmd)
-	if err != nil {
-		panic(err)
-	}
-
+		reqmedia_cmd := commands.NewClientRequestMedia(files)
+		err := ch.Client.SendCommand(reqmedia_cmd)
+		if err != nil {
+			panic(err)
+		}
+	*/
 	time.Sleep(2 * time.Second)
 
 	fmt.Println("Sending CLIENT_READY")
-	err = ch.Client.SendCommand(commands.NewClientReady(5, 5, 5, "mt-bot", 4))
+	err := ch.Client.SendCommand(commands.NewClientReady(5, 5, 5, "mt-bot", 4))
 	if err != nil {
 		panic(err)
 	}
@@ -177,4 +178,19 @@ func (ch *ClientHandler) OnDeleteParticleSpawner(msg *commands.ServerDeleteParti
 
 func (ch *ClientHandler) OnServerMovePlayer(msg *commands.ServerMovePlayer) {
 	fmt.Printf("Move player: '%s'\n", msg)
+
+	go func() {
+		time.Sleep(time.Second * 2)
+		fmt.Printf("Sending player pos command\n")
+		ppos := commands.NewClientPlayerPos()
+		ppos.PosX = uint32(msg.X)
+		ppos.PosY = uint32(msg.Y) + 50
+		ppos.PosZ = uint32(msg.Z) + 50
+		ppos.FOV = 149
+		ppos.RequestViewRange = 13
+		err := ch.Client.SendOriginalCommand(ppos)
+		if err != nil {
+			panic(err)
+		}
+	}()
 }

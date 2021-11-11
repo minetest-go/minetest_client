@@ -28,15 +28,16 @@ func (p *ServerMedia) UnmarshalPacket(payload []byte) error {
 	p.NumFiles = binary.BigEndian.Uint32(payload[offset:])
 	offset += 4
 
-	for i := 0; i < int(p.NumFiles); i++ {
-		name_len := binary.BigEndian.Uint16(payload[offset:])
-		offset += 2
-		name := string(payload[offset : offset+int(name_len)])
-		offset += int(name_len)
+	/*
+		for i := 0; i < int(p.NumFiles); i++ {
+			name_len := binary.BigEndian.Uint16(payload[offset:])
+			offset += 2
+			name := string(payload[offset : offset+int(name_len)])
+			offset += int(name_len)
 
-		//XXX
-	}
-
+			//XXX
+		}
+	*/
 	return nil
 }
 

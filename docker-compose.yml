@@ -2,7 +2,7 @@ version: "3.6"
 
 services:
  minetest:
-  image: registry.gitlab.com/minetest/minetest/server:5.3.0
+  image: registry.gitlab.com/minetest/minetest/server:5.4.0
   user: root
   volumes:
    - "world_data:/root/.minetest/worlds/world"

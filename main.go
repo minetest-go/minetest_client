@@ -11,8 +11,7 @@ import (
 func main() {
 	var host, username, password string
 	var port int
-	var stalk bool
-	var help bool
+	var stalk, downloadmedia, help bool
 
 	flag.StringVar(&host, "host", "127.0.0.1", "The hostname")
 	flag.IntVar(&port, "port", 30000, "The portname")
@@ -20,6 +19,7 @@ func main() {
 	flag.StringVar(&username, "username", "test", "The username")
 	flag.StringVar(&password, "password", "enter", "The password")
 	flag.BoolVar(&stalk, "stalk", false, "Stalk mode: don't really join, just listen")
+	flag.BoolVar(&downloadmedia, "media", false, "Download media")
 	flag.Parse()
 
 	if help {
@@ -32,10 +32,11 @@ func main() {
 	client := NewClient(host, port)
 
 	ch := &ClientHandler{
-		Client:    client,
-		Username:  username,
-		Password:  password,
-		StalkMode: stalk,
+		Client:        client,
+		Username:      username,
+		Password:      password,
+		StalkMode:     stalk,
+		DownloadMedia: downloadmedia,
 	}
 	client.SetServerCommandHandler(ch)
 

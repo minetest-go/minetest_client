@@ -5,17 +5,19 @@ import (
 	"minetest_client/commands"
 	"minetest_client/packet"
 	"minetest_client/srp"
+	"os"
 	"time"
 )
 
 type ClientHandler struct {
-	Client      *Client
-	Username    string
-	Password    string
-	StalkMode   bool
-	SRPPubA     []byte
-	SRPPrivA    []byte
-	MediaHashes map[string][]byte
+	Client        *Client
+	Username      string
+	DownloadMedia bool
+	Password      string
+	StalkMode     bool
+	SRPPubA       []byte
+	SRPPrivA      []byte
+	MediaHashes   map[string][]byte
 }
 
 func (ch *ClientHandler) OnServerSetPeer(peer *commands.ServerSetPeer) {
@@ -95,23 +97,51 @@ func (ch *ClientHandler) OnServerAnnounceMedia(announce *commands.ServerAnnounce
 	fmt.Printf("Server announces media: %d assets\n", announce.FileCount)
 	ch.MediaHashes = announce.Hashes
 
+	if !ch.DownloadMedia {
+		return
+	}
+
+	_, err := os.Stat("media")
+	if os.IsNotExist(err) {
+		err := os.Mkdir("media", 0755)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	fmt.Printf("Sending REQUEST_MEDIA len=%d\n", len(ch.MediaHashes))
 	files := make([]string, 0)
 	for name := range ch.MediaHashes {
 		//fmt.Printf("Name: '%s'\n", name)
-		files = append(files, name)
+
+		_, err := os.Stat("media/" + name)
+		if os.IsNotExist(err) {
+			files = append(files, name)
+		}
+
 	}
 
-	reqmedia_cmd := commands.NewClientRequestMedia(files)
-	err := ch.Client.SendCommand(reqmedia_cmd)
-	if err != nil {
-		panic(err)
+	if len(files) > 0 {
+		reqmedia_cmd := commands.NewClientRequestMedia(files)
+		err = ch.Client.SendCommand(reqmedia_cmd)
+		if err != nil {
+			panic(err)
+		}
 	}
-
 }
 
 func (ch *ClientHandler) OnServerMedia(media *commands.ServerMedia) {
 	fmt.Printf("Server media: %s\n", media)
+
+	for name, data := range media.Files {
+		_, err := os.Stat("media/" + name)
+		if os.IsNotExist(err) {
+			err = os.WriteFile("media/"+name, data, 0644)
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
 }
 
 func (ch *ClientHandler) OnServerCSMRestrictionFlags(flags *commands.ServerCSMRestrictionFlags) {

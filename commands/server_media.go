@@ -9,6 +9,7 @@ type ServerMedia struct {
 	Bunches  uint16
 	Index    uint16
 	NumFiles uint32
+	Files    map[string][]byte
 }
 
 func (p *ServerMedia) GetCommandId() uint16 {
@@ -28,16 +29,22 @@ func (p *ServerMedia) UnmarshalPacket(payload []byte) error {
 	p.NumFiles = binary.BigEndian.Uint32(payload[offset:])
 	offset += 4
 
-	/*
-		for i := 0; i < int(p.NumFiles); i++ {
-			name_len := binary.BigEndian.Uint16(payload[offset:])
-			offset += 2
-			name := string(payload[offset : offset+int(name_len)])
-			offset += int(name_len)
+	p.Files = make(map[string][]byte)
 
-			//XXX
-		}
-	*/
+	for i := 0; i < int(p.NumFiles); i++ {
+		name_len := binary.BigEndian.Uint16(payload[offset:])
+		offset += 2
+
+		name := string(payload[offset : offset+int(name_len)])
+		offset += int(name_len)
+
+		data_len := binary.BigEndian.Uint32(payload[offset:])
+		offset += 4
+
+		p.Files[name] = payload[offset : offset+int(data_len)]
+		offset += int(data_len)
+	}
+
 	return nil
 }
 

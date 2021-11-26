@@ -20,13 +20,15 @@ type Client struct {
 	PeerID      uint16
 	cmd_handler commands.ServerCommandHandler
 	sph         *packet.SplitpacketHandler
+	netrx       chan []byte
 }
 
 func NewClient(host string, port int) *Client {
 	return &Client{
-		Host: host,
-		Port: port,
-		sph:  packet.NewSplitPacketHandler(),
+		Host:  host,
+		Port:  port,
+		sph:   packet.NewSplitPacketHandler(),
+		netrx: make(chan []byte, 1000),
 	}
 }
 
@@ -37,6 +39,7 @@ func (c *Client) Start() error {
 	}
 	c.conn = conn
 	go c.rxLoop()
+	go c.parseLoop()
 
 	return nil
 }
@@ -265,6 +268,22 @@ func (c *Client) onReceive(p *packet.Packet) error {
 	return nil
 }
 
+func (c *Client) parseLoop() {
+	for buf := range c.netrx {
+		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
+
+		p, err := packet.Parse(buf)
+		if err != nil {
+			panic(err)
+		}
+
+		err = c.onReceive(p)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
 func (c *Client) rxLoop() {
 	reader := bufio.NewReader(c.conn)
 
@@ -275,18 +294,6 @@ func (c *Client) rxLoop() {
 			panic(err)
 		}
 
-		go func() {
-			//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
-
-			p, err := packet.Parse(buf[:len])
-			if err != nil {
-				panic(err)
-			}
-
-			err = c.onReceive(p)
-			if err != nil {
-				panic(err)
-			}
-		}()
+		c.netrx <- buf[:len]
 	}
 }

@@ -94,6 +94,20 @@ func (ch *ClientHandler) OnServerAuthAccept(auth *commands.ServerAuthAccept) {
 func (ch *ClientHandler) OnServerAnnounceMedia(announce *commands.ServerAnnounceMedia) {
 	fmt.Printf("Server announces media: %d assets\n", announce.FileCount)
 	ch.MediaHashes = announce.Hashes
+
+	fmt.Printf("Sending REQUEST_MEDIA len=%d\n", len(ch.MediaHashes))
+	files := make([]string, 0)
+	for name := range ch.MediaHashes {
+		//fmt.Printf("Name: '%s'\n", name)
+		files = append(files, name)
+	}
+
+	reqmedia_cmd := commands.NewClientRequestMedia(files)
+	err := ch.Client.SendCommand(reqmedia_cmd)
+	if err != nil {
+		panic(err)
+	}
+
 }
 
 func (ch *ClientHandler) OnServerMedia(media *commands.ServerMedia) {
@@ -103,24 +117,8 @@ func (ch *ClientHandler) OnServerMedia(media *commands.ServerMedia) {
 func (ch *ClientHandler) OnServerCSMRestrictionFlags(flags *commands.ServerCSMRestrictionFlags) {
 	fmt.Println("Server sends csm restriction flags")
 
-	fmt.Println("Sending REQUEST_MEDIA")
-	files := make([]string, 0)
-	for name := range ch.MediaHashes {
-		//fmt.Printf("Name: '%s'\n", name)
-		files = append(files, name)
-	}
-
-	time.Sleep(20 * time.Millisecond)
-
-	reqmedia_cmd := commands.NewClientRequestMedia(files)
-	err := ch.Client.SendCommand(reqmedia_cmd)
-	if err != nil {
-		panic(err)
-	}
-	time.Sleep(2 * time.Second)
-
 	fmt.Println("Sending CLIENT_READY")
-	err = ch.Client.SendCommand(commands.NewClientReady(5, 5, 5, "mt-bot", 4))
+	err := ch.Client.SendCommand(commands.NewClientReady(5, 5, 5, "mt-bot", 4))
 	if err != nil {
 		panic(err)
 	}

@@ -266,24 +266,27 @@ func (c *Client) onReceive(p *packet.Packet) error {
 }
 
 func (c *Client) rxLoop() {
-	buf := make([]byte, 768)
+	reader := bufio.NewReader(c.conn)
 
 	for {
-		len, err := bufio.NewReader(c.conn).Read(buf)
+		buf := make([]byte, 1024)
+		len, err := reader.Read(buf)
 		if err != nil {
 			panic(err)
 		}
 
-		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
+		go func() {
+			//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
 
-		p, err := packet.Parse(buf[:len])
-		if err != nil {
-			panic(err)
-		}
+			p, err := packet.Parse(buf[:len])
+			if err != nil {
+				panic(err)
+			}
 
-		err = c.onReceive(p)
-		if err != nil {
-			panic(err)
-		}
+			err = c.onReceive(p)
+			if err != nil {
+				panic(err)
+			}
+		}()
 	}
 }

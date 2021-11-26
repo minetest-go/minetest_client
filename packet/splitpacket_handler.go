@@ -1,9 +1,12 @@
 package packet
 
+import "sync"
+
 type SplitpacketHandler struct {
 	sessions       map[uint16]map[uint16]*SplitPayload
 	sessions_count map[uint16]uint16
 	seq_nr         uint16
+	lock           *sync.RWMutex
 }
 
 func NewSplitPacketHandler() *SplitpacketHandler {
@@ -11,10 +14,13 @@ func NewSplitPacketHandler() *SplitpacketHandler {
 		sessions:       make(map[uint16]map[uint16]*SplitPayload),
 		sessions_count: make(map[uint16]uint16),
 		seq_nr:         65500 - 1,
+		lock:           &sync.RWMutex{},
 	}
 }
 
 func (sph *SplitpacketHandler) AddPacket(sp *SplitPayload) []byte {
+	sph.lock.Lock()
+	defer sph.lock.Unlock()
 
 	parts := sph.sessions[sp.SeqNr]
 	if parts == nil {

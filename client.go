@@ -266,8 +266,9 @@ func (c *Client) onReceive(p *packet.Packet) error {
 }
 
 func (c *Client) rxLoop() {
+	buf := make([]byte, 768)
+
 	for {
-		buf := make([]byte, 4096)
 		len, err := bufio.NewReader(c.conn).Read(buf)
 		if err != nil {
 			panic(err)

@@ -140,6 +140,7 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 	case commands.ServerCommandHello:
 		cmd := &commands.ServerHello{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			packet.ResetSeqNr(65500)
 			c.cmd_handler.OnServerHello(cmd)
 		}
 

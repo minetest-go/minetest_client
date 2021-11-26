@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"minetest_client/commands"
-	"minetest_client/packet"
 	"minetest_client/srp"
 	"os"
 	"time"
@@ -35,7 +34,6 @@ func (ch *ClientHandler) OnServerHello(hello *commands.ServerHello) {
 	if ch.StalkMode {
 		return
 	}
-	packet.ResetSeqNr(65500)
 
 	if hello.AuthMechanismSRP {
 		// existing client

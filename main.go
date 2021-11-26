@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"minetest_client/packet"
 	"os"
 	"os/signal"
 	"time"
@@ -56,7 +55,7 @@ func main() {
 	<-c
 
 	fmt.Println("Sending disconnect")
-	err = client.Send(packet.CreateControl(client.PeerID, packet.Disco))
+	err = client.Stop()
 	if err != nil {
 		panic(err)
 	}

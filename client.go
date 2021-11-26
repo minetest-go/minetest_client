@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bufio"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"minetest_client/commands"
 	"minetest_client/packet"
@@ -42,6 +42,15 @@ func (c *Client) Start() error {
 	go c.parseLoop()
 
 	return nil
+}
+
+func (c *Client) Stop() error {
+	err := c.Send(packet.CreateControl(c.PeerID, packet.Disco))
+	if err != nil {
+		return err
+	}
+	close(c.netrx)
+	return c.conn.Close()
 }
 
 func (c *Client) Init() error {
@@ -285,11 +294,13 @@ func (c *Client) parseLoop() {
 }
 
 func (c *Client) rxLoop() {
-	reader := bufio.NewReader(c.conn)
-
 	for {
 		buf := make([]byte, 1024)
-		len, err := reader.Read(buf)
+		len, err := c.conn.Read(buf)
+		if errors.Is(err, net.ErrClosed) {
+			return
+		}
+
 		if err != nil {
 			panic(err)
 		}

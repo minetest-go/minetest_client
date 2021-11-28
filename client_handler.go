@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"minetest_client/commands"
+	"minetest_client/packet"
 	"minetest_client/srp"
 	"os"
 	"time"
@@ -20,7 +21,7 @@ type ClientHandler struct {
 }
 
 func (ch *ClientHandler) HandlerLoop() {
-	cmd_chan := make(chan interface{}, 500)
+	cmd_chan := make(chan packet.Command, 500)
 	ch.Client.AddListener(cmd_chan)
 
 	for o := range cmd_chan {
@@ -44,6 +45,7 @@ func (ch *ClientHandler) handleCommand(o interface{}) error {
 		}()
 
 	case *commands.ServerHello:
+		packet.ResetSeqNr(65500)
 		if ch.StalkMode {
 			return nil
 		}

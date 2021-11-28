@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"minetest_client/commands"
@@ -17,7 +16,7 @@ type Client struct {
 	PeerID        uint16
 	sph           *packet.SplitpacketHandler
 	netrx         chan []byte
-	listeners     []chan interface{}
+	listeners     []chan packet.Command
 	listener_lock *sync.RWMutex
 }
 
@@ -27,7 +26,7 @@ func NewClient(host string, port int) *Client {
 		Port:          port,
 		sph:           packet.NewSplitPacketHandler(),
 		netrx:         make(chan []byte, 1000),
-		listeners:     make([]chan interface{}, 0),
+		listeners:     make([]chan packet.Command, 0),
 		listener_lock: &sync.RWMutex{},
 	}
 }
@@ -59,13 +58,13 @@ func (c *Client) Init() error {
 	return c.Send(peerInit)
 }
 
-func (c *Client) AddListener(ch chan interface{}) {
+func (c *Client) AddListener(ch chan packet.Command) {
 	c.listener_lock.Lock()
 	defer c.listener_lock.Unlock()
 	c.listeners = append(c.listeners, ch)
 }
 
-func (c *Client) emitCommand(cmd interface{}) {
+func (c *Client) emitCommand(cmd packet.Command) {
 	c.listener_lock.RLock()
 	defer c.listener_lock.RUnlock()
 
@@ -138,121 +137,12 @@ func (c *Client) Send(packet *packet.Packet) error {
 }
 
 func (c *Client) handleCommandPayload(payload []byte) error {
-	commandId := binary.BigEndian.Uint16(payload[0:])
-	commandPayload := payload[2:]
-	var err error
-
-	//fmt.Printf("Received commandId: %d\n", commandId)
-
-	switch commandId {
-	case commands.ServerCommandSetPeer:
-		cmd := &commands.ServerSetPeer{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandHello:
-		cmd := &commands.ServerHello{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			packet.ResetSeqNr(65500)
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandSRPBytesSB:
-		cmd := &commands.ServerSRPBytesSB{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandAuthAccept:
-		cmd := &commands.ServerAuthAccept{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandAnnounceMedia:
-		cmd := &commands.ServerAnnounceMedia{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandCSMRestrictionFlags:
-		cmd := &commands.ServerCSMRestrictionFlags{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandBlockData:
-		cmd := &commands.ServerBlockData{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandTimeOfDay:
-		cmd := &commands.ServerTimeOfDay{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandChatMessage:
-		cmd := &commands.ServerChatMessage{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandAddParticleSpawner:
-		cmd := &commands.ServerAddParticleSpawner{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandDetachedInventory:
-		cmd := &commands.ServerDetachedInventory{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandHudChange:
-		cmd := &commands.ServerHudChange{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandActiveObjectMessage:
-		cmd := &commands.ServerActiveObjectMessage{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandDeleteParticleSpawner:
-		cmd := &commands.ServerDeleteParticleSpawner{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandMovePlayer:
-		cmd := &commands.ServerMovePlayer{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandMedia:
-		cmd := &commands.ServerMedia{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	case commands.ServerCommandAccessDenied:
-		cmd := &commands.ServerAccessDenied{}
-		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.emitCommand(cmd)
-		}
-
-	default:
-		fmt.Printf("Unknown command received: %d\n", commandId)
+	cmd, err := commands.Parse(payload)
+	if err != nil {
+		return err
 	}
-
-	return err
+	c.emitCommand(cmd)
+	return nil
 }
 
 func (c *Client) onReceive(p *packet.Packet) error {

@@ -190,7 +190,7 @@ func (c *Client) onReceive(p *packet.Packet) error {
 
 func (c *Client) parseLoop() {
 	for buf := range c.netrx {
-		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf[:len]))
+		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf))
 
 		p, err := packet.Parse(buf)
 		if err != nil {

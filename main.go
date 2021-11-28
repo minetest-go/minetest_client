@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"time"
 )
 
 func main() {
@@ -38,14 +37,14 @@ func main() {
 		StalkMode:     stalk,
 		DownloadMedia: downloadmedia,
 	}
-	client.SetServerCommandHandler(ch)
+
+	go ch.HandlerLoop()
 
 	err := client.Start()
 	if err != nil {
 		panic(err)
 	}
 
-	time.Sleep(1 * time.Second)
 	err = client.Init()
 	if err != nil {
 		panic(err)

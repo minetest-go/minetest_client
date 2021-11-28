@@ -7,28 +7,28 @@ import (
 	"minetest_client/commands"
 	"minetest_client/packet"
 	"net"
+	"sync"
 )
 
-type ClientCommandListener interface {
-	OnCommandReceive(c *Client, cmd packet.Command)
-}
-
 type Client struct {
-	conn        net.Conn
-	Host        string
-	Port        int
-	PeerID      uint16
-	cmd_handler commands.ServerCommandHandler
-	sph         *packet.SplitpacketHandler
-	netrx       chan []byte
+	conn          net.Conn
+	Host          string
+	Port          int
+	PeerID        uint16
+	sph           *packet.SplitpacketHandler
+	netrx         chan []byte
+	listeners     []chan interface{}
+	listener_lock *sync.RWMutex
 }
 
 func NewClient(host string, port int) *Client {
 	return &Client{
-		Host:  host,
-		Port:  port,
-		sph:   packet.NewSplitPacketHandler(),
-		netrx: make(chan []byte, 1000),
+		Host:          host,
+		Port:          port,
+		sph:           packet.NewSplitPacketHandler(),
+		netrx:         make(chan []byte, 1000),
+		listeners:     make([]chan interface{}, 0),
+		listener_lock: &sync.RWMutex{},
 	}
 }
 
@@ -59,8 +59,22 @@ func (c *Client) Init() error {
 	return c.Send(peerInit)
 }
 
-func (c *Client) SetServerCommandHandler(cmd_handler commands.ServerCommandHandler) {
-	c.cmd_handler = cmd_handler
+func (c *Client) AddListener(ch chan interface{}) {
+	c.listener_lock.Lock()
+	defer c.listener_lock.Unlock()
+	c.listeners = append(c.listeners, ch)
+}
+
+func (c *Client) emitCommand(cmd interface{}) {
+	c.listener_lock.RLock()
+	defer c.listener_lock.RUnlock()
+
+	for _, ch := range c.listeners {
+		select {
+		case ch <- cmd:
+		default:
+		}
+	}
 }
 
 func (c *Client) SendOriginalCommand(cmd packet.Command) error {
@@ -134,98 +148,104 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 	case commands.ServerCommandSetPeer:
 		cmd := &commands.ServerSetPeer{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerSetPeer(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandHello:
 		cmd := &commands.ServerHello{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
 			packet.ResetSeqNr(65500)
-			c.cmd_handler.OnServerHello(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandSRPBytesSB:
 		cmd := &commands.ServerSRPBytesSB{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerSRPBytesSB(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandAuthAccept:
 		cmd := &commands.ServerAuthAccept{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerAuthAccept(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandAnnounceMedia:
 		cmd := &commands.ServerAnnounceMedia{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerAnnounceMedia(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandCSMRestrictionFlags:
 		cmd := &commands.ServerCSMRestrictionFlags{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerCSMRestrictionFlags(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandBlockData:
 		cmd := &commands.ServerBlockData{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerBlockData(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandTimeOfDay:
 		cmd := &commands.ServerTimeOfDay{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerTimeOfDay(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandChatMessage:
 		cmd := &commands.ServerChatMessage{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerChatMessage(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandAddParticleSpawner:
 		cmd := &commands.ServerAddParticleSpawner{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnAddParticleSpawner(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandDetachedInventory:
 		cmd := &commands.ServerDetachedInventory{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnDetachedInventory(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandHudChange:
 		cmd := &commands.ServerHudChange{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnHudChange(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandActiveObjectMessage:
 		cmd := &commands.ServerActiveObjectMessage{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnActiveObjectMessage(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandDeleteParticleSpawner:
 		cmd := &commands.ServerDeleteParticleSpawner{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnDeleteParticleSpawner(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandMovePlayer:
 		cmd := &commands.ServerMovePlayer{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerMovePlayer(cmd)
+			c.emitCommand(cmd)
 		}
 
 	case commands.ServerCommandMedia:
 		cmd := &commands.ServerMedia{}
 		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
-			c.cmd_handler.OnServerMedia(cmd)
+			c.emitCommand(cmd)
+		}
+
+	case commands.ServerCommandAccessDenied:
+		cmd := &commands.ServerAccessDenied{}
+		if err = cmd.UnmarshalPacket(commandPayload); err == nil {
+			c.emitCommand(cmd)
 		}
 
 	default:
@@ -245,7 +265,7 @@ func (c *Client) onReceive(p *packet.Packet) error {
 				PeerID: p.PeerID,
 			}
 
-			c.cmd_handler.OnServerSetPeer(cmd)
+			c.emitCommand(cmd)
 		}
 	}
 

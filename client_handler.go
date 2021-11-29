@@ -21,10 +21,7 @@ type ClientHandler struct {
 	MediaHashes   map[string][]byte
 }
 
-func (ch *ClientHandler) HandlerLoop() {
-	cmd_chan := make(chan commands.Command, 500)
-	ch.Client.AddListener(cmd_chan)
-
+func (ch *ClientHandler) HandlerLoop(cmd_chan chan commands.Command) {
 	for o := range cmd_chan {
 		err := ch.handleCommand(o)
 		if err != nil {

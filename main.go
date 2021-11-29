@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"minetest_client/commandclient"
+	"minetest_client/commands"
 	"os"
 	"os/signal"
 )
@@ -39,7 +40,9 @@ func main() {
 		DownloadMedia: downloadmedia,
 	}
 
-	go ch.HandlerLoop()
+	cmd_chan := make(chan commands.Command, 500)
+	client.AddListener(cmd_chan)
+	go ch.HandlerLoop(cmd_chan)
 
 	err := client.Connect()
 	if err != nil {

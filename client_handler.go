@@ -36,13 +36,11 @@ func (ch *ClientHandler) handleCommand(o interface{}) error {
 	switch cmd := o.(type) {
 	case *commands.ServerSetPeer:
 		fmt.Printf("Received set_peerid: %d\n", cmd.PeerID)
-		go func() {
-			time.Sleep(1 * time.Second)
-			err := ch.Client.SendOriginalCommand(commands.NewClientInit(ch.Username))
-			if err != nil {
-				panic(err)
-			}
-		}()
+		time.Sleep(1 * time.Second)
+		err := ch.Client.SendOriginalCommand(commands.NewClientInit(ch.Username))
+		if err != nil {
+			return err
+		}
 
 	case *commands.ServerHello:
 		packet.ResetSeqNr(65500)
@@ -185,20 +183,18 @@ func (ch *ClientHandler) handleCommand(o interface{}) error {
 	case *commands.ServerMovePlayer:
 		fmt.Printf("Move player: '%s'\n", cmd)
 
-		go func() {
-			time.Sleep(time.Second * 2)
-			fmt.Printf("Sending player pos command\n")
-			ppos := commands.NewClientPlayerPos()
-			ppos.PosX = uint32(cmd.X)
-			ppos.PosY = uint32(cmd.Y) + 50
-			ppos.PosZ = uint32(cmd.Z) + 50
-			ppos.FOV = 149
-			ppos.RequestViewRange = 13
-			err := ch.Client.SendOriginalCommand(ppos)
-			if err != nil {
-				panic(err)
-			}
-		}()
+		time.Sleep(time.Second * 2)
+		fmt.Printf("Sending player pos command\n")
+		ppos := commands.NewClientPlayerPos()
+		ppos.PosX = uint32(cmd.X)
+		ppos.PosY = uint32(cmd.Y) + 50
+		ppos.PosZ = uint32(cmd.Z) + 50
+		ppos.FOV = 149
+		ppos.RequestViewRange = 13
+		err := ch.Client.SendOriginalCommand(ppos)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

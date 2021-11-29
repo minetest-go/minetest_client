@@ -1,4 +1,4 @@
-package main
+package commandclient
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-type Client struct {
+type CommandClient struct {
 	conn          net.Conn
 	Host          string
 	Port          int
@@ -20,8 +20,8 @@ type Client struct {
 	listener_lock *sync.RWMutex
 }
 
-func NewClient(host string, port int) *Client {
-	return &Client{
+func NewCommandClient(host string, port int) *CommandClient {
+	return &CommandClient{
 		Host:          host,
 		Port:          port,
 		sph:           packet.NewSplitPacketHandler(),
@@ -31,7 +31,7 @@ func NewClient(host string, port int) *Client {
 	}
 }
 
-func (c *Client) Connect() error {
+func (c *CommandClient) Connect() error {
 	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", c.Host, c.Port))
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func (c *Client) Connect() error {
 	return c.Send(peerInit)
 }
 
-func (c *Client) Disconnect() error {
+func (c *CommandClient) Disconnect() error {
 	err := c.Send(packet.CreateControl(c.PeerID, packet.Disco))
 	if err != nil {
 		return err
@@ -54,13 +54,13 @@ func (c *Client) Disconnect() error {
 	return c.conn.Close()
 }
 
-func (c *Client) AddListener(ch chan commands.Command) {
+func (c *CommandClient) AddListener(ch chan commands.Command) {
 	c.listener_lock.Lock()
 	defer c.listener_lock.Unlock()
 	c.listeners = append(c.listeners, ch)
 }
 
-func (c *Client) emitCommand(cmd commands.Command) {
+func (c *CommandClient) emitCommand(cmd commands.Command) {
 	c.listener_lock.RLock()
 	defer c.listener_lock.RUnlock()
 
@@ -72,7 +72,7 @@ func (c *Client) emitCommand(cmd commands.Command) {
 	}
 }
 
-func (c *Client) SendOriginalCommand(cmd commands.Command) error {
+func (c *CommandClient) SendOriginalCommand(cmd commands.Command) error {
 	//fmt.Printf("Sending original command: %s\n", cmd)
 
 	payload, err := commands.CreatePayload(cmd)
@@ -84,7 +84,7 @@ func (c *Client) SendOriginalCommand(cmd commands.Command) error {
 	return c.Send(pkg)
 }
 
-func (c *Client) SendCommand(cmd commands.Command) error {
+func (c *CommandClient) SendCommand(cmd commands.Command) error {
 	//fmt.Printf("Sending command: %s\n", cmd)
 
 	payload, err := commands.CreatePayload(cmd)
@@ -120,7 +120,7 @@ func (c *Client) SendCommand(cmd commands.Command) error {
 	return nil
 }
 
-func (c *Client) Send(packet *packet.Packet) error {
+func (c *CommandClient) Send(packet *packet.Packet) error {
 	data, err := packet.MarshalPacket()
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (c *Client) Send(packet *packet.Packet) error {
 	return err
 }
 
-func (c *Client) handleCommandPayload(payload []byte) error {
+func (c *CommandClient) handleCommandPayload(payload []byte) error {
 	cmd, err := commands.Parse(payload)
 	if err != nil {
 		return err
@@ -141,7 +141,7 @@ func (c *Client) handleCommandPayload(payload []byte) error {
 	return nil
 }
 
-func (c *Client) onReceive(p *packet.Packet) error {
+func (c *CommandClient) onReceive(p *packet.Packet) error {
 	//fmt.Printf("Received packet: %s\n", p)
 
 	if p.PacketType == packet.Reliable || p.PacketType == packet.Original {
@@ -184,7 +184,7 @@ func (c *Client) onReceive(p *packet.Packet) error {
 	return nil
 }
 
-func (c *Client) parseLoop() {
+func (c *CommandClient) parseLoop() {
 	for buf := range c.netrx {
 		//fmt.Printf("Received raw: %s\n", fmt.Sprint(buf))
 
@@ -200,7 +200,7 @@ func (c *Client) parseLoop() {
 	}
 }
 
-func (c *Client) rxLoop() {
+func (c *CommandClient) rxLoop() {
 	for {
 		buf := make([]byte, 1024)
 		len, err := c.conn.Read(buf)

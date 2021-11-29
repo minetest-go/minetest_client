@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"minetest_client/commandclient"
 	"os"
 	"os/signal"
 )
@@ -28,7 +29,7 @@ func main() {
 
 	fmt.Printf("Connecting to '%s:%d' with username '%s'\n", host, port, username)
 
-	client := NewClient(host, port)
+	client := commandclient.NewCommandClient(host, port)
 
 	ch := &ClientHandler{
 		Client:        client,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"minetest_client/commandclient"
 	"minetest_client/commands"
 	"minetest_client/packet"
 	"minetest_client/srp"
@@ -10,7 +11,7 @@ import (
 )
 
 type ClientHandler struct {
-	Client        *Client
+	Client        *commandclient.CommandClient
 	Username      string
 	DownloadMedia bool
 	Password      string

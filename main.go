@@ -40,12 +40,7 @@ func main() {
 
 	go ch.HandlerLoop()
 
-	err := client.Start()
-	if err != nil {
-		panic(err)
-	}
-
-	err = client.Init()
+	err := client.Connect()
 	if err != nil {
 		panic(err)
 	}
@@ -55,7 +50,7 @@ func main() {
 	<-c
 
 	fmt.Println("Sending disconnect")
-	err = client.Stop()
+	err = client.Disconnect()
 	if err != nil {
 		panic(err)
 	}

@@ -31,7 +31,7 @@ func NewClient(host string, port int) *Client {
 	}
 }
 
-func (c *Client) Start() error {
+func (c *Client) Connect() error {
 	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", c.Host, c.Port))
 	if err != nil {
 		return err
@@ -40,22 +40,18 @@ func (c *Client) Start() error {
 	go c.rxLoop()
 	go c.parseLoop()
 
-	return nil
+	peerInit := packet.CreateReliable(0, []byte{0, 0})
+	peerInit.Channel = 0
+	return c.Send(peerInit)
 }
 
-func (c *Client) Stop() error {
+func (c *Client) Disconnect() error {
 	err := c.Send(packet.CreateControl(c.PeerID, packet.Disco))
 	if err != nil {
 		return err
 	}
 	close(c.netrx)
 	return c.conn.Close()
-}
-
-func (c *Client) Init() error {
-	peerInit := packet.CreateReliable(0, []byte{0, 0})
-	peerInit.Channel = 0
-	return c.Send(peerInit)
 }
 
 func (c *Client) AddListener(ch chan commands.Command) {

@@ -1,4 +1,4 @@
-package packet
+package commands
 
 type Serializeable interface {
 	MarshalPacket() ([]byte, error)

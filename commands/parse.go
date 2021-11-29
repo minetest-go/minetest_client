@@ -3,14 +3,13 @@ package commands
 import (
 	"encoding/binary"
 	"fmt"
-	"minetest_client/packet"
 )
 
-func Parse(payload []byte) (packet.Command, error) {
+func Parse(payload []byte) (Command, error) {
 	commandId := binary.BigEndian.Uint16(payload[0:])
 	commandPayload := payload[2:]
 
-	var cmd packet.Command
+	var cmd Command
 
 	switch commandId {
 	case ServerCommandSetPeer:

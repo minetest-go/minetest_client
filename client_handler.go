@@ -21,7 +21,7 @@ type ClientHandler struct {
 }
 
 func (ch *ClientHandler) HandlerLoop() {
-	cmd_chan := make(chan packet.Command, 500)
+	cmd_chan := make(chan commands.Command, 500)
 	ch.Client.AddListener(cmd_chan)
 
 	for o := range cmd_chan {

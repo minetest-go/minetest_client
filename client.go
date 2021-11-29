@@ -16,7 +16,7 @@ type Client struct {
 	PeerID        uint16
 	sph           *packet.SplitpacketHandler
 	netrx         chan []byte
-	listeners     []chan packet.Command
+	listeners     []chan commands.Command
 	listener_lock *sync.RWMutex
 }
 
@@ -26,7 +26,7 @@ func NewClient(host string, port int) *Client {
 		Port:          port,
 		sph:           packet.NewSplitPacketHandler(),
 		netrx:         make(chan []byte, 1000),
-		listeners:     make([]chan packet.Command, 0),
+		listeners:     make([]chan commands.Command, 0),
 		listener_lock: &sync.RWMutex{},
 	}
 }
@@ -58,13 +58,13 @@ func (c *Client) Init() error {
 	return c.Send(peerInit)
 }
 
-func (c *Client) AddListener(ch chan packet.Command) {
+func (c *Client) AddListener(ch chan commands.Command) {
 	c.listener_lock.Lock()
 	defer c.listener_lock.Unlock()
 	c.listeners = append(c.listeners, ch)
 }
 
-func (c *Client) emitCommand(cmd packet.Command) {
+func (c *Client) emitCommand(cmd commands.Command) {
 	c.listener_lock.RLock()
 	defer c.listener_lock.RUnlock()
 
@@ -76,10 +76,10 @@ func (c *Client) emitCommand(cmd packet.Command) {
 	}
 }
 
-func (c *Client) SendOriginalCommand(cmd packet.Command) error {
+func (c *Client) SendOriginalCommand(cmd commands.Command) error {
 	//fmt.Printf("Sending original command: %s\n", cmd)
 
-	payload, err := packet.CreatePayload(cmd)
+	payload, err := commands.CreatePayload(cmd)
 	if err != nil {
 		return err
 	}
@@ -88,10 +88,10 @@ func (c *Client) SendOriginalCommand(cmd packet.Command) error {
 	return c.Send(pkg)
 }
 
-func (c *Client) SendCommand(cmd packet.Command) error {
+func (c *Client) SendCommand(cmd commands.Command) error {
 	//fmt.Printf("Sending command: %s\n", cmd)
 
-	payload, err := packet.CreatePayload(cmd)
+	payload, err := commands.CreatePayload(cmd)
 	if err != nil {
 		return err
 	}

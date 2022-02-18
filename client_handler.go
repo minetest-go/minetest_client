@@ -54,7 +54,7 @@ func (ch *ClientHandler) handleCommand(o interface{}) error {
 				return err
 			}
 
-			fmt.Println("Sending SRP bytes A")
+			fmt.Printf("Sending SRP bytes A, len=%d\n", len(ch.SRPPubA))
 			err = ch.Client.SendCommand(commands.NewClientSRPBytesA(ch.SRPPubA))
 			if err != nil {
 				return err
@@ -68,7 +68,7 @@ func (ch *ClientHandler) handleCommand(o interface{}) error {
 				return err
 			}
 
-			fmt.Println("Sending first SRP")
+			fmt.Printf("Sending first SRP, salt-len=%d, verifier-len=%d\n", len(salt), len(verifier))
 			err = ch.Client.SendCommand(commands.NewClientFirstSRP(salt, verifier))
 			if err != nil {
 				return err
@@ -88,7 +88,7 @@ func (ch *ClientHandler) handleCommand(o interface{}) error {
 
 		proof := srp.ClientProof(identifier, cmd.BytesS, ch.SRPPubA, cmd.BytesB, clientK)
 
-		fmt.Println("Sending SRP bytes M")
+		fmt.Printf("Sending SRP bytes M, len=%d\n", len(proof))
 		err = ch.Client.SendCommand(commands.NewClientSRPBytesM(proof))
 		if err != nil {
 			return err

@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"minetest_client/commandclient"
-	"minetest_client/commands"
 	"os"
 	"os/signal"
+
+	"github.com/minetest-go/minetest_client/commandclient"
+	"github.com/minetest-go/minetest_client/commands"
 )
 
 func main() {

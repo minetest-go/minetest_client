@@ -3,10 +3,11 @@ package commandclient
 import (
 	"errors"
 	"fmt"
-	"minetest_client/commands"
-	"minetest_client/packet"
 	"net"
 	"sync"
+
+	"github.com/minetest-go/minetest_client/commands"
+	"github.com/minetest-go/minetest_client/packet"
 )
 
 type CommandClient struct {

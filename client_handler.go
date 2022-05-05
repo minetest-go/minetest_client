@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"minetest_client/commandclient"
-	"minetest_client/commands"
-	"minetest_client/packet"
-	"minetest_client/srp"
 	"os"
 	"time"
+
+	"github.com/minetest-go/minetest_client/commandclient"
+	"github.com/minetest-go/minetest_client/commands"
+	"github.com/minetest-go/minetest_client/packet"
+	"github.com/minetest-go/minetest_client/srp"
 )
 
 type ClientHandler struct {

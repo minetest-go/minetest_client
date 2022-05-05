@@ -1,4 +1,4 @@
-module minetest_client
+module github.com/minetest-go/minetest_client
 
 go 1.17
 

@@ -3,7 +3,8 @@ package commands
 import (
 	"encoding/binary"
 	"fmt"
-	"minetest_client/types"
+
+	"github.com/minetest-go/minetest_client/types"
 )
 
 type ClientGotBlocks struct {

@@ -61,6 +61,18 @@ func (c *CommandClient) AddListener(ch chan commands.Command) {
 	c.listeners = append(c.listeners, ch)
 }
 
+func (c *CommandClient) RemoveListener(ch chan commands.Command) {
+	c.listener_lock.Lock()
+	defer c.listener_lock.Unlock()
+	newlisteners := make([]chan commands.Command, 0)
+	for _, l := range c.listeners {
+		if l != ch {
+			newlisteners = append(newlisteners, l)
+		}
+	}
+	c.listeners = newlisteners
+}
+
 func (c *CommandClient) emitCommand(cmd commands.Command) {
 	c.listener_lock.RLock()
 	defer c.listener_lock.RUnlock()

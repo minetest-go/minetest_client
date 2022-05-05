@@ -7,7 +7,6 @@ import (
 	"os/signal"
 
 	"github.com/minetest-go/minetest_client/commandclient"
-	"github.com/minetest-go/minetest_client/commands"
 )
 
 func main() {
@@ -44,22 +43,37 @@ func main() {
 	fmt.Printf("Connecting to '%s:%d' with username '%s'\n", host, port, username)
 
 	client := commandclient.NewCommandClient(host, port)
-
-	ch := &ClientHandler{
-		Client:        client,
-		Username:      username,
-		Password:      password,
-		StalkMode:     stalk,
-		DownloadMedia: downloadmedia,
-	}
-
-	cmd_chan := make(chan commands.Command, 500)
-	client.AddListener(cmd_chan)
-	go ch.HandlerLoop(cmd_chan)
+	go commandclient.DebugHandler(client)
 
 	err := client.Connect()
 	if err != nil {
 		panic(err)
+	}
+
+	err = commandclient.Init(client, username)
+	if err != nil {
+		panic(err)
+	}
+
+	if !stalk {
+		err = commandclient.Login(client, username, password)
+		if err != nil {
+			panic(err)
+		}
+
+		go func() {
+			err = commandclient.ClientReady(client)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		if downloadmedia {
+			err = commandclient.FetchMedia(client)
+			if err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	c := make(chan os.Signal, 1)

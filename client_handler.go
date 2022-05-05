@@ -178,7 +178,7 @@ func (ch *ClientHandler) handleCommand(o interface{}) error {
 	case *commands.ServerTimeOfDay:
 		fmt.Printf("Time of day: %d\n", cmd.TimeOfDay)
 	case *commands.ServerChatMessage:
-		fmt.Printf("Chat: '%s'\n", cmd.Message)
+		fmt.Printf("Chat: %s\n", cmd)
 	case *commands.ServerMovePlayer:
 		fmt.Printf("Move player: '%s'\n", cmd)
 

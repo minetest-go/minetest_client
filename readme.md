@@ -43,6 +43,44 @@ Usage of ./minetest_client:
     	The username (default "test")
 ```
 
+# Api
+
+```golang
+package main
+
+import (
+	"github.com/minetest-go/minetest_client/commandclient"
+)
+
+func main() {
+  host := "127.0.0.1"
+  port := 30000
+  username := "test"
+  password := "test"
+
+  client := commandclient.NewCommandClient(host, port)
+	err := client.Connect()
+	if err != nil {
+		panic(err)
+	}
+
+	err = commandclient.Init(client, username)
+	if err != nil {
+		panic(err)
+	}
+
+  err = commandclient.Login(client, username, password)
+  if err != nil {
+    panic(err)
+  }
+
+  err = commandclient.ClientReady(client)
+  if err != nil {
+    panic(err)
+  }
+}
+```
+
 # License
 
 MIT

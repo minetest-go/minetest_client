@@ -8,7 +8,8 @@ import (
 )
 
 type ServerBlockData struct {
-	Pos types.Pos
+	Pos       types.Pos
+	BlockData []byte
 }
 
 func (p *ServerBlockData) GetCommandId() uint16 {
@@ -26,6 +27,7 @@ func (p *ServerBlockData) UnmarshalPacket(payload []byte) error {
 		int(int16(binary.BigEndian.Uint16(payload[4:]))),
 	}
 	p.Pos = blockpos
+	p.BlockData = payload[6:]
 	return nil
 }
 

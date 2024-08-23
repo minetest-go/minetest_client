@@ -25,7 +25,7 @@ func TestServerBlockData(t *testing.T) {
 	err = pkg.UnmarshalPacket(payload[0x37:])
 	assert.NoError(t, err)
 
-	assert.Equal(t, int16(32), pkg.Pos.PosX)
-	assert.Equal(t, int16(-2), pkg.Pos.PosY)
-	assert.Equal(t, int16(12), pkg.Pos.PosZ)
+	assert.Equal(t, 32, pkg.Pos.X())
+	assert.Equal(t, -2, pkg.Pos.Y())
+	assert.Equal(t, 12, pkg.Pos.Z())
 }

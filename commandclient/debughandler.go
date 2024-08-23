@@ -19,7 +19,7 @@ func DebugHandler(cc *CommandClient) error {
 			gotblocks := commands.NewClientGotBlocks()
 			gotblocks.AddBlock(cmd.Pos)
 
-			//fmt.Printf("Got block: %s\n", cmd.Pos)
+			fmt.Printf("Got block: %s\n", &cmd.Pos)
 			err := cc.SendCommand(gotblocks)
 			if err != nil {
 				return err

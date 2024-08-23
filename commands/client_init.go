@@ -18,10 +18,12 @@ func NewClientInit(playername string) *ClientInit {
 		ClientMax:                 28,
 		SupportedCompressionModes: 0,
 		MinNetProtoVersion:        37,
-		MaxNetProtoVersion:        40,
+		MaxNetProtoVersion:        44,
 		PlayerName:                playername,
 	}
 }
+
+// protocol ref: https://github.com/minetest/minetest/blob/master/src/network/networkprotocol.h#L222
 
 func (p *ClientInit) GetCommandId() uint16 {
 	return ClientCommandInit

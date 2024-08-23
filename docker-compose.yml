@@ -2,13 +2,12 @@ version: "3.6"
 
 services:
  minetest:
-  image: registry.gitlab.com/minetest/minetest/server:5.5.1
-  user: root
+  build: dev
   volumes:
    - "world_data:/root/.minetest/worlds/world"
   ports:
    - "30000:30000/udp"
-  command: ["/usr/local/bin/minetestserver", "--config", "/etc/minetest/minetest.conf", "--verbose"]
+  command: ["/usr/local/bin/minetestserver", "--config", "/etc/minetest/minetest.conf", "--gameid", "nodecore", "--verbose", "--world", "/root/.minetest/worlds/world/"]
 
 volumes:
   world_data: {}

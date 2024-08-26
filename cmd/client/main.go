@@ -56,7 +56,7 @@ func main() {
 	}
 
 	if !stalk {
-		err = commandclient.Login(client, username, password)
+		err = commandclient.Login(client, username, password, true)
 		if err != nil {
 			panic(err)
 		}

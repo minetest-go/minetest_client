@@ -47,7 +47,7 @@ func Ping(host string, port int) (*PingResult, error) {
 	}
 
 	res := &PingResult{
-		Delay:  time.Now().Sub(start),
+		Delay:  time.Since(start),
 		PeerID: binary.BigEndian.Uint16(buf[12:]),
 	}
 

@@ -52,6 +52,10 @@ func (c *CommandClient) Disconnect() error {
 		return err
 	}
 	close(c.netrx)
+	for _, l := range c.listeners {
+		close(l)
+	}
+
 	return c.conn.Close()
 }
 

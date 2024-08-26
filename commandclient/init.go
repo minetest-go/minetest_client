@@ -2,7 +2,6 @@ package commandclient
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/minetest-go/minetest_client/commands"
@@ -14,9 +13,8 @@ func Init(cc *CommandClient, username string) error {
 	defer cc.RemoveListener(ch)
 
 	for o := range ch {
-		switch cmd := o.(type) {
+		switch o.(type) {
 		case *commands.ServerSetPeer:
-			fmt.Printf("Received set_peerid: %d\n", cmd.PeerID)
 			time.Sleep(1 * time.Second)
 			err := cc.SendOriginalCommand(commands.NewClientInit(username))
 			return err

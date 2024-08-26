@@ -2,7 +2,6 @@ package commandclient
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/minetest-go/minetest_client/commands"
 	"github.com/minetest-go/minetest_client/packet"
@@ -10,8 +9,9 @@ import (
 )
 
 var ErrAccessDenied = errors.New("access denied")
+var ErrNotRegistered = errors.New("username not registered")
 
-func Login(cc *CommandClient, username, password string) error {
+func Login(cc *CommandClient, username, password string, enable_registration bool) error {
 	ch := make(chan commands.Command, 100)
 	cc.AddListener(ch)
 	defer cc.RemoveListener(ch)
@@ -31,7 +31,6 @@ func Login(cc *CommandClient, username, password string) error {
 					return err
 				}
 
-				fmt.Printf("Sending SRP bytes A, len=%d\n", len(srppub))
 				err = cc.SendCommand(commands.NewClientSRPBytesA(srppub))
 				if err != nil {
 					return err
@@ -39,20 +38,23 @@ func Login(cc *CommandClient, username, password string) error {
 			}
 
 			if cmd.AuthMechanismFirstSRP {
+				if !enable_registration {
+					// registration not enabled, fail
+					return ErrNotRegistered
+				}
+
 				// new client
 				salt, verifier, err := srp.NewClient([]byte(username), []byte(password))
 				if err != nil {
 					return err
 				}
 
-				fmt.Printf("Sending first SRP, salt-len=%d, verifier-len=%d\n", len(salt), len(verifier))
 				err = cc.SendCommand(commands.NewClientFirstSRP(salt, verifier))
 				if err != nil {
 					return err
 				}
 			}
 		case *commands.ServerAccessDenied:
-			fmt.Println("Access denied")
 			return ErrAccessDenied
 
 		case *commands.ServerSRPBytesSB:
@@ -66,14 +68,12 @@ func Login(cc *CommandClient, username, password string) error {
 
 			proof := srp.ClientProof(identifier, cmd.BytesS, srppub, cmd.BytesB, clientK)
 
-			fmt.Printf("Sending SRP bytes M, len=%d\n", len(proof))
 			err = cc.SendCommand(commands.NewClientSRPBytesM(proof))
 			if err != nil {
 				return err
 			}
 
 		case *commands.ServerAuthAccept:
-			fmt.Println("Sending INIT2")
 			err := cc.SendCommand(commands.NewClientInit2())
 			return err
 		}

@@ -46,6 +46,8 @@ func Parse(payload []byte) (Command, error) {
 		cmd = &ServerMedia{}
 	case ServerCommandAccessDenied:
 		cmd = &ServerAccessDenied{}
+	case ServerCommandNodeDefinitions:
+		cmd = &ServerNodeDefinitions{}
 	default:
 		fmt.Printf("Unknown command received: %d\n", commandId)
 	}

@@ -9,16 +9,26 @@ import (
 )
 
 type NodeDefinition struct {
-	ID uint16
+	ID      uint16
+	Version uint8
+	Name    string
 }
 
 func (def *NodeDefinition) Parse(data []byte) error {
+	def.Version = data[0]
+
+	offset := 1
+	data_len := binary.BigEndian.Uint16(data[offset:])
+	offset += 2
+	def.Name = string(data[offset : offset+(int(data_len))])
+	offset += int(data_len)
+
 	//TODO: more fields
 	return nil
 }
 
 func (def *NodeDefinition) String() string {
-	return fmt.Sprintf("{NodeDefinition ID=%d}", def.ID)
+	return fmt.Sprintf("{NodeDefinition ID=%d,Version=%d,Name=%s}", def.ID, def.Version, def.Name)
 }
 
 type ServerNodeDefinitions struct {
@@ -59,10 +69,8 @@ func (p *ServerNodeDefinitions) UnmarshalPacket(payload []byte) error {
 
 	offset := 0
 	for i := 0; i < int(p.Count); i++ {
-		//fmt.Println(fmt.Sprint(nodedefs_raw[offset : offset+10]))
 		nodeid := binary.BigEndian.Uint16(nodedefs_raw[offset:])
 		offset += 2
-		//fmt.Println(nodeid)
 
 		nodedef_size := binary.BigEndian.Uint16(nodedefs_raw[offset:])
 		offset += 2

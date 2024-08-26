@@ -24,6 +24,8 @@ func DebugHandler(cc *CommandClient) error {
 			if err != nil {
 				return err
 			}
+		case *commands.ServerNodeDefinitions:
+			fmt.Printf("Nodedefs: %v\n", cmd.Definitions)
 		case *commands.ServerTimeOfDay:
 			fmt.Printf("Time of day: %d\n", cmd.TimeOfDay)
 		case *commands.ServerChatMessage:

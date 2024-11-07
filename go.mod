@@ -2,7 +2,7 @@ module github.com/minetest-go/minetest_client
 
 go 1.22.4
 
-toolchain go1.23.0
+toolchain go1.23.3
 
 require github.com/stretchr/testify v1.9.0
 

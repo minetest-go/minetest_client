@@ -5,30 +5,37 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/minetest-go/minetest_client/commands"
 	"github.com/minetest-go/minetest_client/packet"
 )
 
+var ErrTimeout = errors.New("timeout")
+
 type CommandClient struct {
-	conn          net.Conn
-	Host          string
-	Port          int
-	PeerID        uint16
-	sph           *packet.SplitpacketHandler
-	netrx         chan []byte
-	listeners     []chan commands.Command
-	listener_lock *sync.RWMutex
+	conn                  net.Conn
+	Host                  string
+	Port                  int
+	PeerID                uint16
+	sph                   *packet.SplitpacketHandler
+	netrx                 chan []byte
+	listeners             []chan commands.Command
+	listener_lock         *sync.RWMutex
+	payload_listeners     []chan []byte
+	payload_listener_lock *sync.RWMutex
 }
 
 func NewCommandClient(host string, port int) *CommandClient {
 	return &CommandClient{
-		Host:          host,
-		Port:          port,
-		sph:           packet.NewSplitPacketHandler(),
-		netrx:         make(chan []byte, 1000),
-		listeners:     make([]chan commands.Command, 0),
-		listener_lock: &sync.RWMutex{},
+		Host:                  host,
+		Port:                  port,
+		sph:                   packet.NewSplitPacketHandler(),
+		netrx:                 make(chan []byte, 1000),
+		listeners:             make([]chan commands.Command, 0),
+		listener_lock:         &sync.RWMutex{},
+		payload_listeners:     make([]chan []byte, 0),
+		payload_listener_lock: &sync.RWMutex{},
 	}
 }
 
@@ -75,6 +82,44 @@ func (c *CommandClient) RemoveListener(ch chan commands.Command) {
 		}
 	}
 	c.listeners = newlisteners
+}
+
+func (c *CommandClient) AddPayloadListener(ch chan []byte) {
+	c.payload_listener_lock.Lock()
+	defer c.payload_listener_lock.Unlock()
+	c.payload_listeners = append(c.payload_listeners, ch)
+}
+
+func (c *CommandClient) RemovePayloadListener(ch chan []byte) {
+	c.payload_listener_lock.Lock()
+	defer c.payload_listener_lock.Unlock()
+
+	newlisteners := make([]chan []byte, 0)
+	for _, l := range c.payload_listeners {
+		if l != ch {
+			newlisteners = append(newlisteners, l)
+		}
+	}
+	c.payload_listeners = newlisteners
+}
+
+func (c *CommandClient) WaitFor(cmd commands.Command, timeout time.Duration) error {
+	ch := make(chan []byte, 1000)
+	c.AddPayloadListener(ch)
+	defer c.RemovePayloadListener(ch)
+	until := time.Now().Add(timeout)
+
+	for {
+		select {
+		case <-time.After(time.Until(until)):
+			return ErrTimeout
+		case payload := <-ch:
+			cmdId := commands.GetCommandID(payload)
+			if cmdId == cmd.GetCommandId() {
+				return cmd.UnmarshalPacket(commands.GetCommandPayload(payload))
+			}
+		}
+	}
 }
 
 func (c *CommandClient) emitCommand(cmd commands.Command) {
@@ -150,6 +195,12 @@ func (c *CommandClient) Send(packet *packet.Packet) error {
 }
 
 func (c *CommandClient) handleCommandPayload(payload []byte) error {
+	c.payload_listener_lock.RLock()
+	for _, ch := range c.payload_listeners {
+		ch <- payload
+	}
+	c.payload_listener_lock.RUnlock()
+
 	cmd, err := commands.Parse(payload)
 	if err != nil {
 		return err

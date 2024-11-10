@@ -4,9 +4,17 @@ import (
 	"encoding/binary"
 )
 
+func GetCommandID(payload []byte) uint16 {
+	return binary.BigEndian.Uint16(payload[0:])
+}
+
+func GetCommandPayload(payload []byte) []byte {
+	return payload[2:]
+}
+
 func Parse(payload []byte) (Command, error) {
-	commandId := binary.BigEndian.Uint16(payload[0:])
-	commandPayload := payload[2:]
+	commandId := GetCommandID(payload)
+	commandPayload := GetCommandPayload(payload)
 
 	var cmd Command
 

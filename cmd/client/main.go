@@ -43,8 +43,6 @@ func main() {
 	fmt.Printf("Connecting to '%s:%d' with username '%s'\n", host, port, username)
 
 	client := commandclient.NewCommandClient(host, port)
-	go commandclient.DebugHandler(client)
-
 	err := client.Connect()
 	if err != nil {
 		panic(err)
@@ -55,24 +53,26 @@ func main() {
 		panic(err)
 	}
 
-	if !stalk {
+	if stalk {
+		go commandclient.DebugHandler(client)
+
+	} else {
 		err = commandclient.Login(client, username, password, true)
 		if err != nil {
 			panic(err)
 		}
-
-		go func() {
-			err = commandclient.ClientReady(client)
-			if err != nil {
-				panic(err)
-			}
-		}()
+		fmt.Println("Successfully logged in")
 
 		if downloadmedia {
 			err = commandclient.FetchMedia(client)
 			if err != nil {
 				panic(err)
 			}
+		}
+
+		err = commandclient.ClientReady(client)
+		if err != nil {
+			panic(err)
 		}
 	}
 

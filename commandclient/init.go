@@ -8,11 +8,7 @@ import (
 )
 
 func Init(cc *CommandClient, username string) error {
-	ch := make(chan commands.Command, 100)
-	cc.AddListener(ch)
-	defer cc.RemoveListener(ch)
-
-	for o := range ch {
+	for o := range cc.CommandChannel() {
 		switch o.(type) {
 		case *commands.ServerSetPeer:
 			time.Sleep(1 * time.Second)

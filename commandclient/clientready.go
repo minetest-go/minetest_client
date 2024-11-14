@@ -7,11 +7,7 @@ import (
 )
 
 func ClientReady(cc *CommandClient) error {
-	ch := make(chan commands.Command, 100)
-	cc.AddListener(ch)
-	defer cc.RemoveListener(ch)
-
-	for o := range ch {
+	for o := range cc.CommandChannel() {
 		switch o.(type) {
 		case *commands.ServerCSMRestrictionFlags:
 			err := cc.SendCommand(commands.NewClientReady(5, 5, 5, "mt-bot", 4))

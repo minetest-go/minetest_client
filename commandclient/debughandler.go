@@ -9,11 +9,7 @@ import (
 )
 
 func DebugHandler(cc *CommandClient) error {
-	ch := make(chan commands.Command, 100)
-	cc.AddListener(ch)
-	defer cc.RemoveListener(ch)
-
-	for o := range ch {
+	for o := range cc.CommandChannel() {
 		switch cmd := o.(type) {
 		case *commands.ServerBlockData:
 			gotblocks := commands.NewClientGotBlocks()

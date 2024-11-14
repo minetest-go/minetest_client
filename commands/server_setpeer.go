@@ -14,7 +14,9 @@ func (p *ServerSetPeer) GetCommandId() uint16 {
 }
 
 func (p *ServerSetPeer) MarshalPacket() ([]byte, error) {
-	return nil, nil
+	buf := make([]byte, 2)
+	binary.BigEndian.PutUint16(buf, p.PeerID)
+	return buf, nil
 }
 
 func (p *ServerSetPeer) UnmarshalPacket(payload []byte) error {

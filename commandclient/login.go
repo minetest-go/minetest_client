@@ -12,13 +12,9 @@ var ErrAccessDenied = errors.New("access denied")
 var ErrNotRegistered = errors.New("username not registered")
 
 func Login(cc *CommandClient, username, password string, enable_registration bool) error {
-	ch := make(chan commands.Command, 100)
-	cc.AddListener(ch)
-	defer cc.RemoveListener(ch)
-
 	var srppub, srppriv []byte
 
-	for o := range ch {
+	for o := range cc.CommandChannel() {
 		switch cmd := o.(type) {
 		case *commands.ServerHello:
 			packet.ResetSeqNr(65500)

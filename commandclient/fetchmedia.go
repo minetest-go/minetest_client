@@ -9,13 +9,10 @@ import (
 )
 
 func FetchMedia(cc *CommandClient) error {
-	ch := make(chan commands.Command, 1000)
-	cc.AddListener(ch)
-	defer cc.RemoveListener(ch)
 	received_count := 0
 	expected_count := 0
 
-	for o := range ch {
+	for o := range cc.CommandChannel() {
 		switch cmd := o.(type) {
 
 		case *commands.ServerAnnounceMedia:
@@ -50,6 +47,7 @@ func FetchMedia(cc *CommandClient) error {
 				}
 			} else {
 				// nothing to fetch
+				fmt.Printf("All media files up to date\n")
 				return nil
 			}
 

@@ -7,7 +7,7 @@ services:
    - "world_data:/root/.minetest/worlds/world"
   ports:
    - "30000:30000/udp"
-  command: ["/usr/local/bin/minetestserver", "--config", "/etc/minetest/minetest.conf", "--gameid", "nodecore", "--verbose", "--world", "/root/.minetest/worlds/world/"]
+  command: ["/usr/local/bin/luantiserver", "--gameid", "nodecore", "--verbose", "--world", "/root/.minetest/worlds/world/"]
 
 volumes:
   world_data: {}

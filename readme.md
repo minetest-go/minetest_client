@@ -64,12 +64,13 @@ func main() {
 		panic(err)
 	}
 
-	err = commandclient.Init(client, username)
+	err = commandclient.Init(client, username, nil)
 	if err != nil {
 		panic(err)
 	}
 
-  err = commandclient.Login(client, username, password)
+  enable_registration := true
+  err = commandclient.Login(client, username, password, enable_registration)
   if err != nil {
     panic(err)
   }

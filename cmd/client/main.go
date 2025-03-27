@@ -48,7 +48,7 @@ func main() {
 		panic(err)
 	}
 
-	err = commandclient.Init(client, username)
+	err = commandclient.Init(client, username, nil)
 	if err != nil {
 		panic(err)
 	}

@@ -23,7 +23,7 @@ type PingResult struct {
 }
 
 func Ping(host string, port int) (*PingResult, error) {
-	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", host, port))
+	conn, err := net.Dial("udp", net.JoinHostPort(host, fmt.Sprintf("%d", port)))
 	if err != nil {
 		return nil, err
 	}

@@ -32,7 +32,7 @@ func NewCommandClient(host string, port int) *CommandClient {
 }
 
 func (c *CommandClient) Connect() error {
-	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", c.Host, c.Port))
+	conn, err := net.Dial("udp", net.JoinHostPort(c.Host, fmt.Sprintf("%d", c.Port)))
 	if err != nil {
 		return err
 	}

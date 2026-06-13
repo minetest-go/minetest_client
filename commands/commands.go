@@ -7,6 +7,7 @@ const (
 	ClientCommandInit2        uint16 = 17
 	ClientCommandPlayerPos    uint16 = 35
 	ClientCommandGotBlocks    uint16 = 36
+	ClientCommandChatMessage  uint16 = 50
 	ClientCommandRequestMedia uint16 = 64
 	ClientCommandReady        uint16 = 67
 	ClientCommandFirstSRP     uint16 = 80

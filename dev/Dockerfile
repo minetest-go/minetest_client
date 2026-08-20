@@ -1,4 +1,4 @@
-FROM ghcr.io/luanti-org/luanti:5.11.0
+FROM ghcr.io/luanti-org/luanti:5.17.0
 USER root
 RUN apk update && apk add git && \
     mkdir -p /root/.minetest/games && \

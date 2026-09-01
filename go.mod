@@ -4,9 +4,11 @@ go 1.22.4
 
 toolchain go1.23.0
 
-require github.com/stretchr/testify v1.10.0
+require github.com/stretchr/testify v1.12.1
 
 require github.com/minetest-go/types v1.0.7
+
+require go.yaml.in/yaml/v3 v3.0.5 // indirect
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
